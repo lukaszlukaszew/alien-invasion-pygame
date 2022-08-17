@@ -1,10 +1,11 @@
-"""Main functions of the game"""
+"""Main module of the game"""
 
-import sys
 import pygame
 
 from settings import Settings
 from ship import Ship
+
+import game_functions as gf
 
 
 def run_game():
@@ -17,20 +18,8 @@ def run_game():
     ship = Ship(screen)
 
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-
-        screen.fill(ai_settings.bg_color)
-
-        ship.blitme()
-
-        pygame.display.flip()
+        gf.check_events()
+        gf.update_screen(ai_settings, screen, ship)
 
 
 run_game()
-
-# TODO make options to choose resolution, make images scallable, make fullscreen option
-# TODO prepare new graphics, change default colors of the game
-# TODO add explosions when there was hit
-# TODO choose nice font for the game
