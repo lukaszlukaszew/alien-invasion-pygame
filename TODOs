@@ -2,3 +2,10 @@
 # TODO prepare new graphics, change default colors of the game
 # TODO add explosions when there was hit
 # TODO choose nice font for the game
+
+
+# TODO aliens change color when shot, darker aliens == less life
+# TODO aliens can hide from bullets behind walls
+# TODO walls could are destuctible
+# TODO player can be bullet proof to some point
+# TODO after alien is killed it could drop some upgrade (shooting, speed, armor etc.)
