@@ -3,11 +3,11 @@
 import pygame
 
 
-class Ship():
+class Ship:
     """Class representing ship and it's functionalities"""
 
-    def __init__(self, screen, ai_settings):
-
+    def __init__(self, ai_settings, screen):
+        """Create ship object at the center & bottom of the screen"""
         self.screen = screen
         self.ai_settings = ai_settings
         self.image = pygame.image.load("images/ship.bmp")
