@@ -50,13 +50,15 @@ def update_screen(ai_settings, screen, ship, aliens, bullets):
     pygame.display.flip()
 
 
-def update_bullets(bullets):
-    """Update bullets positions and remove unnecessarry ones"""
+def update_bullets(ai_settings, screen, ship, aliens, bullets):
+    """Update bullets positions and check collission with aliens"""
     bullets.update()  # here for every item in group method update() is launched
 
     for bullet in bullets.copy():
         if bullet.rect.bottom <= 0:
             bullets.remove(bullet)
+
+    check_bullet_alien_collisions(ai_settings, screen, ship, aliens, bullets)
 
 
 def fire_bullets(ai_settings, screen, ship, bullets):
@@ -120,3 +122,12 @@ def change_fleet_direction(ai_settings, aliens):
     for alien in aliens.sprites():
         alien.rect.y += ai_settings.fleet_drop_speed
     ai_settings.fleet_direction *= -1
+
+
+def check_bullet_alien_collisions(ai_settings, screen, ship, aliens, bullets):
+    """Reaction to the collision between bullet and alien"""
+    collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
+
+    if not aliens:
+        bullets.empty()
+        create_fleet(ai_settings, screen, ship, aliens)
