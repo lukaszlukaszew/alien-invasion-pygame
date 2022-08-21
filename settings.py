@@ -3,6 +3,7 @@
 
 class Settings:
     """Class dedicated to store all game configuration"""
+
     def __init__(self):
 
         # screen settings
@@ -12,6 +13,7 @@ class Settings:
 
         # ship settings
         self.ship_speed_factor = 1.5
+        self.ship_limit = 3
 
         # bullet settings
         self.bullet_speed_factor = 3
