@@ -1,13 +1,15 @@
 """Module for ship features"""
 
 import pygame
+from pygame.sprite import Sprite
 
 
-class Ship:
+class Ship(Sprite):
     """Class representing ship and it's functionalities"""
 
     def __init__(self, ai_settings, screen):
         """Create ship object at the center & bottom of the screen"""
+        super().__init__()
         self.screen = screen
         self.ai_settings = ai_settings
         self.image = pygame.image.load("images/ship.bmp")

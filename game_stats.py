@@ -1,4 +1,4 @@
-"""Module contains class to monitor game variables"""
+"""Module to monitor game variables"""
 
 
 class GameStats:
@@ -10,6 +10,10 @@ class GameStats:
 
         self.game_active = False
 
+        self.high_score = 0
+
     def reset_stats(self):
         """Initialize base values of stats"""
         self.ships_left = self.ai_settings.ship_limit
+        self.score = 0
+        self.level = 1
