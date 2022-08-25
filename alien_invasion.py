@@ -31,6 +31,8 @@ def run_game():
 
     gf.create_fleet(ai_settings, screen, ship, aliens)
 
+    clock = pygame.time.Clock()
+
     while True:
         gf.check_events(
             ai_settings, screen, stats, score_board, play_button, ship, aliens, bullets
@@ -49,5 +51,6 @@ def run_game():
             ai_settings, screen, stats, score_board, ship, aliens, bullets, play_button
         )
 
+        clock.tick(60)
 
 run_game()
