@@ -1,68 +1,68 @@
-"""Module for ship features"""
+"""Module containing ship features"""
 
-import pygame
 from pygame.sprite import Sprite
+
 from animations import Animation
 
 
 class Ship(Sprite, Animation):
-    """Class representing ship and it's functionalities"""
+    """Class representing player's ship and its functionalities"""
 
-    def __init__(self, ai_settings, screen):
+    animations = {}
+
+    def __init__(self, settings, screen):
         """Create ship object at the center & bottom of the screen"""
-        Sprite.__init__(self)
+        super().__init__()
+
         self.screen = screen
-        self.ai_settings = ai_settings
-        self.main = []
-        self.main.append(pygame.image.load('images/ship/main/sprite_0.png'))
-        self.main.append(pygame.image.load('images/ship/main/sprite_1.png'))
-        self.main.append(pygame.image.load('images/ship/main/sprite_2.png'))
-        self.main.append(pygame.image.load('images/ship/main/sprite_3.png'))
+        self.settings = settings
 
-        self.move_right = []
-        self.move_right.append(pygame.image.load('images/ship/move_right/sprite_0.png'))
-        self.move_right.append(pygame.image.load('images/ship/move_right/sprite_1.png'))
-        self.move_right.append(pygame.image.load('images/ship/move_right/sprite_2.png'))
-        self.move_right.append(pygame.image.load('images/ship/move_right/sprite_3.png'))
+        # animations
+        for animation, frames in {"main": 4, "move_left": 4, "move_right": 4}.items():
+            self.load_images(self.__str__(), animation, frames, Ship.animations)
 
-        self.move_left = []
-        self.move_left.append(pygame.image.load('images/ship/move_left/sprite_0.png'))
-        self.move_left.append(pygame.image.load('images/ship/move_left/sprite_1.png'))
-        self.move_left.append(pygame.image.load('images/ship/move_left/sprite_2.png'))
-        self.move_left.append(pygame.image.load('images/ship/move_left/sprite_3.png'))
-
+        # image
         self.current_frame = 0
-        self.image = self.main[self.current_frame]
+        self.image = Ship.animations["main"][self.current_frame]
+
+        # rects
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
+        # positioning
         self.rect.centerx = self.screen_rect.centerx
         self.rect.bottom = self.screen_rect.bottom
 
         self.center = float(self.rect.centerx)
 
+        # movement
         self.moving_right = False
         self.moving_left = False
 
+    def __str__(self):
+        return "ship"
+
     def blitme(self):
-        """Show ship in its current position"""
+        """Show ship on the screen in its current position"""
         self.screen.blit(self.image, self.rect)
 
     def update(self):
         """Update position of the ship"""
 
         self.current_frame += 1
-        if self.current_frame >= len(self.main) * 10:
-            self.current_frame = 0
-        if not self.moving_right:
-            self.image = self.main[self.current_frame // 10]
 
-        if self.moving_right and self.rect.right < self.screen_rect.right:
-            self.center += self.ai_settings.ship_speed_factor
-            self.image = self.move_right[self.current_frame // 10]
-        if self.moving_left and self.rect.left > 0:
-            self.center -= self.ai_settings.ship_speed_factor
-            self.image = self.move_left[self.current_frame // 10]
+        if self.current_frame >= len(Ship.animations["main"]) * 10:
+            self.current_frame = 0
+
+        if not (self.moving_right or self.moving_left):
+            self.image = Ship.animations["main"][self.current_frame // 10]
+        else:
+            if self.moving_right and self.rect.right < self.screen_rect.right:
+                self.center += self.settings.ship_speed_factor
+                self.image = Ship.animations["move_right"][self.current_frame // 10]
+            if self.moving_left and self.rect.left > 0:
+                self.center -= self.settings.ship_speed_factor
+                self.image = Ship.animations["move_left"][self.current_frame // 10]
 
         self.rect.centerx = self.center
 

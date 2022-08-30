@@ -1,4 +1,4 @@
-"""All settings of the game"""
+"""Module for predefinied settings of the game"""
 
 
 class Settings:
@@ -23,6 +23,10 @@ class Settings:
         # alien settings
         self.fleet_drop_speed = 10
 
+        # level settings
+        self.alien_changes = (6, 11, 16, 21, 26)
+        self.boss_levels = (16, 31)
+
         # game speed change
         self.speedup_scale = 1.1
 
@@ -46,7 +50,7 @@ class Settings:
         self.alien_points = 50
 
     def increase_speed(self):
-        """Change speed factors due to higher difficulty"""
+        """Change speed factors due to higher level"""
         self.ship_speed_factor *= self.speedup_scale
         self.bullet_speed_factor *= self.speedup_scale
         self.alien_speed_factor *= self.speedup_scale

@@ -1,4 +1,4 @@
-"""Module for button features"""
+"""Module containing interface features"""
 
 import pygame.font
 
@@ -7,6 +7,7 @@ class Button:
     """Class representing stylish interactive button"""
 
     def __init__(self, screen, msg):
+        """Initialize basic characteristics of the button"""
         self.screen = screen
         self.screen_rect = screen.get_rect()
 
@@ -31,6 +32,6 @@ class Button:
         self.msg_image_rect.center = self.rect.center
 
     def draw_button(self):
-        """Show button and message"""
+        """Show button with the message on the screen"""
         self.screen.fill(self.button_color, self.rect)
         self.screen.blit(self.msg_image, self.msg_image_rect)
