@@ -5,6 +5,7 @@ from random import randint
 from pygame.sprite import Sprite
 
 from animations import Animation
+from bullet import AlienBullet
 
 
 class Alien(Sprite, Animation):
@@ -22,6 +23,7 @@ class Alien(Sprite, Animation):
         self.frame = 1
         self.multiplier = 1
         self.rect = None
+        self.x = None
 
     def check_edges(self):
         """Returns true if alien is at hhe edge of the screen"""
@@ -40,14 +42,15 @@ class Alien(Sprite, Animation):
         self.load_images(str(self), type(self).__name__, self.frames, Alien.animations)
 
         self.frame = randint(
-            0, (len(Alien.animations[type(self).__name__]) - 1) * self.multiplier
+            0, len(Alien.animations[type(self).__name__]) * self.multiplier - 1
         )
 
-        self.image = Alien.animations[type(self).__name__][
-            self.frame // self.multiplier
-        ]
+        self.image = Alien.animations[type(self).__name__][self.frame // self.multiplier]
 
         self.rect = self.image.get_rect()
+
+        self.x = float(self.rect.x)
+
         self.place_alien_on_screen()
 
     def place_alien_on_screen(self):
@@ -60,20 +63,17 @@ class Alien(Sprite, Animation):
 
     def update(self):
         """Animate and move alien to the left or to the right"""
-        if (
-            self.frame
-            >= (len(Alien.animations[type(self).__name__]) - 1) * self.multiplier
-        ):
-            self.frame = 0
-        self.frame += 1
-        self.image = Alien.animations[type(self).__name__][
-            self.frame // self.multiplier
-        ]
-        self.rect.x += self.settings.alien_speed_factor * self.settings.fleet_direction
+        self.frame = int((self.frame + 1) % len(Alien.animations[type(self).__name__] * self.multiplier))
+        self.image = Alien.animations[type(self).__name__][self.frame // self.multiplier]
+
+        self.x += self.settings.alien_speed_factor * self.settings.fleet_direction
+        self.rect.x = self.x
+
+        #print(id(self), self.rect.x, self.settings.fleet_direction, self.settings.alien_speed_factor)
 
 
 class AlienUFO(Alien):
-    """Class representing UFO-type of alien and it's functionalities"""
+    """Class representing UFO-type of alien and its functionalities"""
 
     def __init__(self, settings, screen):
         super().__init__(settings, screen)
@@ -84,7 +84,7 @@ class AlienUFO(Alien):
 
 
 class AlienTentacle(Alien):
-    """Class representing alien with tentacles and it's functionalities"""
+    """Class representing alien with tentacles and its functionalities"""
 
     def __init__(self, settings, screen):
         super().__init__(settings, screen)
@@ -92,3 +92,76 @@ class AlienTentacle(Alien):
         self.frames = 6
 
         self.prepare_images()
+
+        self.x = float(self.rect.x)
+
+    def update(self):
+        """Animate and move alien to the left or to the right"""
+        self.frame = int((self.frame + 1) % len(Alien.animations[type(self).__name__] * self.multiplier))
+        self.image = Alien.animations[type(self).__name__][self.frame // self.multiplier]
+
+        self.x += self.settings.alien_speed_factor * self.settings.fleet_direction
+        self.rect.x = self.x
+
+        screen_rect = self.screen.get_rect()
+
+        if self.rect.centerx >= screen_rect.centerx:
+            self.rect.y -= self.settings.fleet_direction
+        else:
+            self.rect.y += self.settings.fleet_direction
+
+
+class AlienShoot(Alien):
+    """Class representing shooting alien and its functionalities"""
+
+    def __init__(self, settings, screen, group):
+        super().__init__(settings, screen)
+        self.multiplier = 16
+        self.frames = 4
+
+        self.prepare_images()
+
+        self.bullet_group = group
+
+    def update(self):
+        """Animate and move alien to the left or to the right"""
+        self.frame = int((self.frame + 1) % len(Alien.animations[type(self).__name__] * self.multiplier))
+        self.image = Alien.animations[type(self).__name__][self.frame // self.multiplier]
+        self.rect.y = max(min(self.rect.y + randint(-1,1) * randint(1,3), self.settings.screen_height * 2 / 3), 0)
+        self.rect.x = max(min(self.rect.x + randint(-1,1) * randint(1,3), self.settings.screen_width - self.rect.width), 0)
+        self.shoot()
+
+
+    def shoot(self):
+        if randint(0, 1000) > 999:
+            self.bullet_group.add(AlienBullet(self.settings, self.screen, self.rect.centerx, self.rect.centery))
+
+
+class AlienTeleport(Alien):
+    """Class representing teleporting class and it's functionalities"""
+    def __init__(self, settings, screen, group):
+        super().__init__(settings, screen)
+        self.multiplier = 8
+        self.frames = 24
+
+        self.prepare_images()
+
+        self.bullet_group = group
+
+    def update(self):
+        self.frame = int((self.frame + 1) % len(Alien.animations[type(self).__name__] * self.multiplier))
+        self.image = Alien.animations[type(self).__name__][self.frame // self.multiplier]
+
+        if not self.frame:
+            self.rect.x = randint(0, self.settings.screen_width - self.rect.width)
+            self.rect.y = randint(0, self.settings.screen_height - 2 * self.rect.height)
+
+        if 7 <= self.frame <= 11:
+            self.shoot()
+
+
+
+    def shoot(self):
+        if randint(0, 1000) > 950:
+            self.bullet_group.add(AlienBullet(self.settings, self.screen, self.rect.centerx, self.rect.centery))
+

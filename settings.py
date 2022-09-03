@@ -24,8 +24,7 @@ class Settings:
         self.fleet_drop_speed = 10
 
         # level settings
-        self.alien_changes = (6, 11, 16, 21, 26)
-        self.boss_levels = (16, 31)
+        self.alien_changes = (6, 11, 16, 17, 22, 27, 31)
 
         # game speed change
         self.speedup_scale = 1.1

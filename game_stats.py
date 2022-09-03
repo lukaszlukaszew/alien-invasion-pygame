@@ -16,4 +16,4 @@ class GameStats:
         """Initialize base values of stats"""
         self.ships_left = self.settings.ship_limit
         self.score = 0
-        self.level = 1
+        self.level = 18

@@ -23,30 +23,31 @@ def run_game():
 
     ship = Ship(settings, screen)
     bullets = Group()
+    alien_bullets = Group()
     aliens = Group()
     stats = GameStats(settings)
-    score_board = Scoreboard(settings, screen, stats)
+    scoreboard = Scoreboard(settings, screen, stats)
 
-    gf.create_fleet(settings, screen, stats, ship, aliens)
+    gf.create_fleet(settings, screen, stats, ship, aliens, alien_bullets)
 
     clock = pygame.time.Clock()
 
     while True:
         gf.check_events(
-            settings, screen, stats, score_board, play_button, ship, aliens, bullets
+            settings, screen, stats, scoreboard, play_button, ship, aliens, bullets, alien_bullets
         )
 
         if stats.game_active:
             ship.update()
             gf.update_bullets(
-                settings, screen, stats, score_board, ship, aliens, bullets
+                settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets
             )
             gf.update_aliens(
-                settings, stats, score_board, screen, ship, aliens, bullets
+                settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets
             )
 
         gf.update_screen(
-            settings, screen, stats, score_board, ship, aliens, bullets, play_button
+            settings, screen, stats, scoreboard, ship, aliens, bullets, play_button, alien_bullets
         )
 
         clock.tick(60)
