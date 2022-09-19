@@ -25,6 +25,7 @@ class Settings:
 
         # level settings
         self.alien_changes = (6, 11, 16, 17, 22, 27, 31)
+        self.alien_types = ("AlienUFO", "AlienTentacle", "AlienShoot", "AlienTeleport")
 
         # game speed change
         self.speedup_scale = 1.1
@@ -54,3 +55,5 @@ class Settings:
         self.bullet_speed_factor *= self.speedup_scale
         self.alien_speed_factor *= self.speedup_scale
         self.alien_points = int(self.alien_points * self.score_scale)
+
+        #print(self.ship_speed_factor, self.bullet_speed_factor, self.alien_speed_factor)

@@ -3,156 +3,110 @@
 import sys
 from time import sleep
 from random import randint
+
 import pygame
-from bullet import Bullet
+from bullet import ShipBullet
 from alien import AlienUFO, AlienTentacle, AlienShoot, AlienTeleport
 
 
-def check_events(
-    settings, screen, stats, scoreboard, play_button, ship, aliens, bullets, alien_bullets
-):
-    """Event loop"""
+def check_events(game):
+    """Game event loop"""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            check_play_button(
-                settings,
-                screen,
-                stats,
-                scoreboard,
-                play_button,
-                ship,
-                aliens,
-                bullets,
-                mouse_x,
-                mouse_y,
-                alien_bullets
-            )
+            check_play_button(game, mouse_x, mouse_y)
         elif event.type == pygame.KEYDOWN:
-            check_keydown_events(
-                event, settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets
-            )
+            check_keydown_events(event, game)
         elif event.type == pygame.KEYUP:
-            check_keyup_events(event, ship)
+            check_keyup_events(event, game)
 
 
-def check_keydown_events(
-    event, settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets
-):
+def check_keydown_events(event, game):
     """Actions for pressed keys"""
     if event.key == pygame.K_RIGHT:
-        ship.moving_right = True
+        game.ship.moving_right = True
     if event.key == pygame.K_LEFT:
-        ship.moving_left = True
+        game.ship.moving_left = True
     if event.key == pygame.K_SPACE:
-        fire_bullets(settings, screen, ship, bullets)
+        fire_bullets(game)
     if event.key == pygame.K_p:
-        start_game(settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets)
+        start_game(game)
     if event.key == pygame.K_q:
         sys.exit()
 
 
-def check_keyup_events(event, ship):
+def check_keyup_events(event, game):
     """Actions for released keys"""
     if event.key == pygame.K_RIGHT:
-        ship.moving_right = False
+        game.ship.moving_right = False
     if event.key == pygame.K_LEFT:
-        ship.moving_left = False
+        game.ship.moving_left = False
 
 
-def update_screen(
-    settings, screen, stats, scoreboard, ship, aliens, bullets, play_button, alien_bullets
-):
+def update_screen(game):
     """Actions required to screen refresh"""
-    screen.fill(settings.bg_color)
+    game.screen.fill(game.settings.bg_color)
 
-    for bullet in bullets.sprites():
+    for bullet in game.bullets.sprites():
         bullet.draw_bullet()
 
-    for abullet in alien_bullets.sprites():
+    for abullet in game.alien_bullets.sprites():
         abullet.draw_bullet()
 
-    ship.blitme()
-    aliens.draw(screen)
-    scoreboard.show_score()
+    game.ship.blitme()
+    game.aliens.draw(game.screen)
+    game.scoreboard.show_score()
 
-    if not stats.game_active:
-        play_button.draw_button()
+    if not game.stats.game_active:
+        game.play_button.draw_button()
 
     pygame.display.flip()
 
 
-def update_bullets(
-    settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets
-):
+def update_bullets(game):
     """Update bullets positions and check collission with aliens"""
-    bullets.update()  # here for every item in group method update() is launched
+    game.bullets.update()  # here for every item in group method update() is launched
 
-    for bullet in bullets.copy():
+    for bullet in game.bullets.copy():
         if bullet.rect.bottom <= 0:
-            bullets.remove(bullet)
+            game.bullets.remove(bullet)
 
-    check_bullet_alien_collisions(
-        settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets
+    check_bullet_alien_collisions(game)
+
+    if game.alien_bullets:
+        game.alien_bullets.update()
+        for abullet in game.alien_bullets.copy():
+            if abullet.rect.top >= game.settings.screen_height:
+                game.alien_bullets.remove(abullet)
+
+        check_alien_bullets_ship_collision(game)
+
+
+def fire_bullets(game):
+    """Create new bullets when needed"""
+    if len(game.bullets) < game.settings.bullets_allowed:
+        new_bullet = ShipBullet(game.settings, game.screen, game.ship)
+        game.bullets.add(new_bullet)
+
+
+def create_fleet(game):
+    """Create full fleet of aliens"""
+    k, alien = choose_proper_alien(game)
+
+    number_aliens_x = get_number_aliens_x(game.settings, alien.rect.width)
+    number_rows = get_number_rows(
+        game.settings, game.ship.rect.height, alien.rect.height
     )
 
-    if alien_bullets:
-        alien_bullets.update()
-        for abullet in alien_bullets.copy():
-            if abullet.rect.top >= settings.screen_height:
-                alien_bullets.remove(abullet)
-
-        check_alien_bullets_ship_collision(settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets)
-
-
-def fire_bullets(settings, screen, ship, bullets):
-    """Create new bullets when needed"""
-    if len(bullets) < settings.bullets_allowed:
-        new_bullet = Bullet(settings, screen, ship)
-        bullets.add(new_bullet)
-
-
-def create_fleet(settings, screen, stats, ship, aliens, alien_bullets):
-    """Create full fleet of aliens"""
-    if stats.level < settings.alien_changes[0]:
-        alien = AlienUFO(settings, screen)
-    elif stats.level < settings.alien_changes[1]:
-        alien = AlienTentacle(settings, screen)
-    elif stats.level < settings.alien_changes[3]:
-        alien = AlienShoot(settings, screen, alien_bullets)
-    elif stats.level < settings.alien_changes[4]:
-        alien = AlienTeleport(settings, screen, alien_bullets)
-
-    number_aliens_x = get_number_aliens_x(settings, alien.rect.width)
-    number_rows = get_number_rows(settings, ship.rect.height, alien.rect.height)
-
-    if stats.level < settings.alien_changes[3]:
+    if game.stats.level < game.settings.alien_changes[3]:
         for row_number in range(number_rows):
             for alien_number in range(number_aliens_x):
-                create_alien(
-                    settings,
-                    screen,
-                    aliens,
-                    alien_number,
-                    row_number,
-                    stats.level,
-                    number_aliens_x,
-                    alien_bullets,
-                )
+                create_alien(game, alien_number, row_number, number_aliens_x)
     else:
-        for alien_number in range(stats.level):
-            create_alien(
-                settings,
-                screen,
-                aliens,
-                alien_number,
-                0,
-                stats.level,
-                number_aliens_x,
-                alien_bullets,
-            )
+        for alien_number in range(game.stats.level):
+            create_alien(game, alien_number, 0, number_aliens_x)
 
 
 def get_number_aliens_x(settings, alien_width):
@@ -162,48 +116,56 @@ def get_number_aliens_x(settings, alien_width):
     return number_aliens_x
 
 
-def create_alien(
-    settings,
-    screen,
-    aliens,
-    alien_number,
-    row_number,
-    level,
-    number_aliens_x,
-    alien_bullets,
-):
+def choose_proper_alien(game):
+    """Retrun proper alien according to game level"""
+    k = 0
+    for k, change_value in enumerate(game.settings.alien_changes):
+        if game.stats.level < change_value:
+            alien = globals()[game.settings.alien_types[k]](
+                game.settings, game.screen, game.alien_bullets
+            )
+            break
+    else:
+        alien = globals()[game.settings.alien_types[-1]](
+            game.settings, game.screen, game.alien_bullets
+        )
+
+    return k, alien
+
+
+def create_alien(game, alien_number, row_number, number_aliens_x):
     """Create alien and add it to the fleet"""
-    if level < settings.alien_changes[0]:
-        alien = AlienUFO(settings, screen)
+    k, alien = choose_proper_alien(game)
+
+    if k == 0:  # AlienUFO
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         alien_width = alien.rect.width
         alien.x = alien_width + 2 * alien_width * alien_number
         alien.rect.x = alien.x
-    elif level < settings.alien_changes[1]:
-        alien = AlienTentacle(settings, screen)
+    elif k == 1:  # AlienTentacle
         y = (
-            alien.rect.height
-            + alien.rect.height
+            2 * alien.rect.height
             - alien.rect.height
             * abs(alien_number - number_aliens_x // 2)
             // number_aliens_x
         )
+
         alien.rect.y = y + alien.rect.height * row_number
         alien_width = alien.rect.width
-        alien.x = alien_width + 2 * alien_width * alien_number
+        alien.x = (
+            alien_width + (game.settings.screen_width // number_aliens_x) * alien_number
+        )
         alien.rect.x = alien.x
-    elif level < settings.alien_changes[3]:
-        alien = AlienShoot(settings, screen, alien_bullets)
+    elif k == 2:  # AlienShoot
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         alien_width = alien.rect.width
         alien.x = alien_width + 2 * alien_width * alien_number
         alien.rect.x = alien.x
-    elif level < settings.alien_changes[4]:
-        alien = AlienTeleport(settings, screen, alien_bullets)
-        alien.rect.x = randint(0, settings.screen_width - alien.rect.width)
-        alien.rect.y = randint(0, settings.screen_height - 3 * alien.rect.height)
+    elif k == 3:  # AlienTeleport
+        alien.rect.x = randint(0, game.settings.screen_width - alien.rect.width)
+        alien.rect.y = randint(0, game.settings.screen_height - 3 * alien.rect.height)
 
-    aliens.add(alien)
+    game.aliens.add(alien)
 
 
 def get_number_rows(settings, ship_height, alien_height):
@@ -213,15 +175,15 @@ def get_number_rows(settings, ship_height, alien_height):
     return number_rows
 
 
-def update_aliens(settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets):
+def update_aliens(game):
     """Check screen edges and update position of every alien in the group"""
-    check_fleet_edges(settings, stats, aliens)
-    aliens.update()
+    check_fleet_edges(game.settings, game.stats, game.aliens)
+    game.aliens.update()
 
-    if pygame.sprite.spritecollideany(ship, aliens):
-        ship_hit(settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets)
+    if pygame.sprite.spritecollideany(game.ship, game.aliens):
+        ship_hit(game)
 
-    check_aliens_bottom(settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets)
+    check_aliens_bottom(game)
 
 
 def check_fleet_edges(settings, stats, aliens):
@@ -240,109 +202,68 @@ def change_fleet_direction(settings, aliens):
     settings.fleet_direction *= -1
 
 
-def check_bullet_alien_collisions(
-    settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets
-):
+def check_bullet_alien_collisions(game):
     """Reaction to the collision between bullet and alien"""
-    collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
+    collisions = pygame.sprite.groupcollide(game.bullets, game.aliens, True, True)
 
     if collisions:
         for aliens in collisions.values():
-            stats.score += settings.alien_points * len(aliens)
-            scoreboard.prep_score()
-        check_high_score(stats, scoreboard)
+            game.stats.score += game.settings.alien_points * len(aliens)
+            game.scoreboard.prep_score()
+        check_high_score(game.stats, game.scoreboard)
 
-    if not aliens:
-        bullets.empty()
-        settings.increase_speed()
+    if not game.aliens:
+        game.bullets.empty()
+        game.settings.increase_speed()
 
-        stats.level += 1
-        scoreboard.prep_level()
+        game.stats.level += 1
+        game.scoreboard.prep_level()
 
-        create_fleet(settings, screen, stats, ship, aliens, alien_bullets)
+        create_fleet(game)
 
 
-def ship_hit(
-    settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets
-):
+def ship_hit(game):
     """Reaction in case of collision of ship and alien"""
-    if stats.ships_left > 0:
-        stats.ships_left -= 1
+    if game.stats.ships_left > 0:
+        game.stats.ships_left -= 1
 
-        scoreboard.prep_ships()
-
-        aliens.empty()
-        bullets.empty()
-
-        create_fleet(settings, screen, stats, ship, aliens, alien_bullets)
-        ship.center_ship()
+        reset_screen(game)
 
         sleep(0.5)
     else:
-        stats.game_active = False
+        game.stats.game_active = False
         pygame.mouse.set_visible(True)
 
 
-def check_aliens_bottom(
-    settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets
-):
+def check_aliens_bottom(game):
     """Reaction to any alien reacheing bottom of the screen."""
-    screen_rect = screen.get_rect()
-    for alien in aliens.sprites():
+    screen_rect = game.screen.get_rect()
+    for alien in game.aliens.sprites():
         if alien.rect.bottom >= screen_rect.bottom:
-            ship_hit(
-                settings,
-                stats,
-                scoreboard,
-                screen,
-                ship,
-                aliens,
-                bullets,
-                alien_bullets,
-            )
+            ship_hit(game)
             break
 
 
-def check_play_button(
-    settings,
-    screen,
-    stats,
-    scoreboard,
-    play_button,
-    ship,
-    aliens,
-    bullets,
-    mouse_x,
-    mouse_y,
-    alien_bullets
-):
+def check_play_button(game, mouse_x, mouse_y):
     """Reaction to button click"""
-    button_clicked = play_button.rect.collidepoint(mouse_x, mouse_y)
-    if button_clicked and not stats.game_active:
-        start_game(settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets)
+    button_clicked = game.play_button.rect.collidepoint(mouse_x, mouse_y)
+    if button_clicked and not game.stats.game_active:
+        start_game(game)
 
 
-def start_game(
-    settings, screen, stats, scoreboard, ship, aliens, bullets, alien_bullets
-):
+def start_game(game):
     """Prepare and start the game"""
-    settings.initialize_dynamic_settings()
+    game.settings.initialize_dynamic_settings()
 
     pygame.mouse.set_visible(False)
-    stats.reset_stats()
-    stats.game_active = True
+    game.stats.reset_stats()
+    game.stats.game_active = True
 
-    scoreboard.prep_score()
-    scoreboard.prep_high_score()
-    scoreboard.prep_level()
-    scoreboard.prep_ships()
+    game.scoreboard.prep_score()
+    game.scoreboard.prep_high_score()
+    game.scoreboard.prep_level()
 
-    aliens.empty()
-    bullets.empty()
-    alien_bullets.empty()
-
-    create_fleet(settings, screen, stats, ship, aliens, alien_bullets)
-    ship.center_ship()
+    reset_screen(game)
 
 
 def check_high_score(stats, scoreboard):
@@ -352,6 +273,18 @@ def check_high_score(stats, scoreboard):
         scoreboard.prep_high_score()
 
 
-def check_alien_bullets_ship_collision(settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets):
-    if pygame.sprite.spritecollideany(ship, alien_bullets):
-        ship_hit(settings, stats, scoreboard, screen, ship, aliens, bullets, alien_bullets)
+def check_alien_bullets_ship_collision(game):
+    """Check if the ship has been shot down"""
+    if pygame.sprite.spritecollideany(game.ship, game.alien_bullets):
+        ship_hit(game)
+
+
+def reset_screen(game):
+    """Set default game and screen elements to default state"""
+    game.scoreboard.prep_ships()
+    game.aliens.empty()
+    game.bullets.empty()
+    game.alien_bullets.empty()
+
+    create_fleet(game)
+    game.ship.center_ship()
