@@ -6,7 +6,7 @@ from random import randint
 
 import pygame
 from bullet import ShipBullet
-from alien import AlienUFO, AlienTentacle, AlienShoot, AlienTeleport, AlienBoss1
+from alien import *
 
 
 def check_events(game):
@@ -67,7 +67,7 @@ def update_screen(game):
 
 def update_bullets(game):
     """Update bullets positions and check collission with aliens"""
-    game.bullets.update()  # here for every item in group method update() is launched
+    game.bullets.update()
 
     for bullet in game.bullets.copy():
         if bullet.rect.bottom <= 0:
@@ -98,7 +98,6 @@ def create_fleet(game):
         create_alien(game, 1, 0, 1)
     elif game.stats.level > game.settings.alien_changes[-1]:
         pass
-
     else:
         alien = globals()[game.settings.alien_types[game.settings.current_alien]](
             game.settings, game.screen, game.alien_bullets
@@ -210,12 +209,10 @@ def check_bullet_alien_collisions(game):
 
     if collisions:
         if game.stats.level >= game.settings.alien_changes[-1]:
-            print(game.settings.alien_boss_life)
             game.settings.alien_boss_life = max(
                 0, game.settings.alien_boss_life - len(collisions)
             )
             game.stats.score += game.settings.alien_boss_points * len(collisions)
-            print(game.settings.alien_boss_life)
 
             game.scoreboard.prep_boss_health()
         else:
@@ -283,6 +280,7 @@ def start_game(game):
     game.scoreboard.prep_score()
     game.scoreboard.prep_high_score()
     game.scoreboard.prep_level()
+    game.scoreboard.prep_boss_health()
 
     reset_screen(game)
 

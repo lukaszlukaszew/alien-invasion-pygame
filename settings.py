@@ -10,9 +10,10 @@ class Settings:
         self.screen_width = 1200
         self.screen_height = 800
         self.bg_color = (0, 0, 0)
+        self.text_color = (255, 255, 255)
 
         # ship settings
-        self.ship_limit = 10
+        self.ship_limit = 3
 
         # bullet settings
         self.bullet_width = 3
@@ -29,6 +30,7 @@ class Settings:
         self.alien_boss_area = 30
         self.alien_bullet_width = 3
         self.alien_boss_points = 2000000
+        self.starting_alien_boss_life = 50
 
         # level settings
         self.alien_changes = (6, 11, 16, 21)
@@ -61,7 +63,7 @@ class Settings:
         self.alien_speed_factor = 1
         self.fleet_direction = 1
         self.alien_points = 50
-        self.alien_boss_life = 50
+        self.alien_boss_life = self.starting_alien_boss_life
         self.current_alien = 0
 
     def increase_speed(self):

@@ -14,6 +14,7 @@ class Bullet(Sprite):
         self.color = settings.bullet_color
         self.speed_factor = settings.bullet_speed_factor
         self.direction = 0
+        self.y = 0
 
     def update(self):
         """Move Bullet object"""
@@ -34,7 +35,6 @@ class ShipBullet(Bullet, Sprite):
         self.ship = ship
         self.direction = -1
 
-        # ship bullet rect
         self.rect = pygame.Rect(
             ship.rect.centerx,
             ship.rect.top,
@@ -53,7 +53,6 @@ class AlienBullet(Bullet, Sprite):
         super().__init__(settings, screen)
         self.direction = 1
 
-        # bullet rect
         self.rect = pygame.Rect(
             x,
             y,
@@ -82,7 +81,6 @@ class AlienBossBeam(Bullet, Sprite):
         self.screen_height = settings.screen_height
         self.y = y
 
-        # beam rect
         self.rect = pygame.Rect(
             x - 15,
             self.y,

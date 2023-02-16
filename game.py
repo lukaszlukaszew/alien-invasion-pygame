@@ -16,6 +16,8 @@ class Game:
     """Main class of the game"""
 
     def __init__(self):
+        """Create game object with required: scoreboard, stats and settings, clock. Create ship and objects groups to
+        handle elements of the screen. Prepare screen and refresh rate."""
         pygame.init()
 
         self.settings = Settings()
@@ -30,7 +32,6 @@ class Game:
 
         self.ship = Ship(self.settings, self.screen)
 
-        #groups
         self.bullets = Group()
         self.alien_bullets = Group()
         self.aliens = Group()
@@ -40,7 +41,7 @@ class Game:
         self.run_game()
 
     def run_game(self):
-        """Start of the main loop"""
+        """Start of the main loop of the game"""
         pygame.display.set_caption("Alien Invasion")
         gf.create_fleet(self)
 

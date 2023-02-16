@@ -17,25 +17,20 @@ class Ship(Sprite, Animation):
         self.screen = screen
         self.settings = settings
 
-        # animations
         for animation, frames in {"main": 4, "move_left": 4, "move_right": 4}.items():
             self.load_images(self.__str__(), animation, frames, Ship.animations)
 
-        # image
         self.current_frame = 0
         self.image = Ship.animations["main"][self.current_frame]
 
-        # rects
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
-        # positioning
         self.rect.centerx = self.screen_rect.centerx
         self.rect.bottom = self.screen_rect.bottom
 
         self.center = float(self.rect.centerx)
 
-        # movement
         self.moving_right = False
         self.moving_left = False
 

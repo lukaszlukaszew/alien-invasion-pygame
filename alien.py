@@ -28,7 +28,7 @@ class Alien(Sprite, Animation):
         self.shoot_range = 999
 
     def check_edges(self):
-        """Returns true if alien is at hhe edge of the screen"""
+        """Returns true if alien is at the edge of the screen"""
         screen_rect = self.screen.get_rect()
         if self.rect.right >= screen_rect.right:
             return True
@@ -227,16 +227,11 @@ class AlienBoss1(Alien):
         self.move = "main"
         self.image = Alien.animations[type(self).__name__ + self.move][self.frame]
 
-        # rects
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
-        # positioning
         self.rect.centerx = self.screen_rect.centerx
         self.rect.centery = self.screen_rect.centery
-
-        # y-area of movement
-        self.yrange = self.screen_rect.height // 4 * 3
 
     def update(self):
         """Animate and move alien pseudorandonly"""
@@ -274,7 +269,11 @@ class AlienBoss1(Alien):
     def left_down(self):
         """Calculate and move alien towards left lower corner of the screen"""
         current_move = randint(
-            0, min(self.yrange - self.rect.centery, self.settings.alien_boss_area)
+            0,
+            min(
+                self.screen_rect.height // 4 * 3 - self.rect.centery,
+                self.settings.alien_boss_area,
+            ),
         )
         self.rect.centerx = max(0, self.rect.centerx - current_move)
         self.rect.centery += current_move
@@ -298,7 +297,7 @@ class AlienBoss1(Alien):
             0,
             min(
                 self.screen_rect.width - self.rect.centerx,
-                self.yrange - self.rect.centery,
+                self.screen_rect.height // 4 * 3 - self.rect.centery,
                 self.settings.alien_boss_area,
             ),
         )

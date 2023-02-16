@@ -27,7 +27,6 @@ class Button:
     def prep_msg(self, msg):
         """Prepare message at the center of the button"""
         self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
-        # font.render(txt, antyaliasing (T/F), txt_color, bg_color(empty = transparent bg))
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
 
