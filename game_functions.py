@@ -6,7 +6,7 @@ from random import randint
 
 import pygame
 from bullet import ShipBullet
-from alien import AlienUFO, AlienTentacle, AlienShoot, AlienTeleport
+from alien import AlienUFO, AlienTentacle, AlienShoot, AlienTeleport, AlienBoss1
 
 
 def check_events(game):
@@ -93,20 +93,29 @@ def fire_bullets(game):
 
 def create_fleet(game):
     """Create full fleet of aliens"""
-    k, alien = choose_proper_alien(game)
 
-    number_aliens_x = get_number_aliens_x(game.settings, alien.rect.width)
-    number_rows = get_number_rows(
-        game.settings, game.ship.rect.height, alien.rect.height
-    )
+    if game.stats.level == game.settings.alien_changes[-1]:
+        create_alien(game, 1, 0, 1)
+    elif game.stats.level > game.settings.alien_changes[-1]:
+        pass
 
-    if game.stats.level < game.settings.alien_changes[3]:
-        for row_number in range(number_rows):
-            for alien_number in range(number_aliens_x):
-                create_alien(game, alien_number, row_number, number_aliens_x)
     else:
-        for alien_number in range(game.stats.level):
-            create_alien(game, alien_number, 0, number_aliens_x)
+        alien = globals()[game.settings.alien_types[game.settings.current_alien]](
+            game.settings, game.screen, game.alien_bullets
+        )
+
+        number_aliens_x = get_number_aliens_x(game.settings, alien.rect.width)
+        number_rows = get_number_rows(
+            game.settings, game.ship.rect.height, alien.rect.height
+        )
+
+        if game.stats.level < game.settings.alien_changes[3]:
+            for row_number in range(number_rows):
+                for alien_number in range(number_aliens_x):
+                    create_alien(game, alien_number, row_number, number_aliens_x)
+        else:
+            for alien_number in range(game.stats.level):
+                create_alien(game, alien_number, 0, number_aliens_x)
 
 
 def get_number_aliens_x(settings, alien_width):
@@ -116,33 +125,18 @@ def get_number_aliens_x(settings, alien_width):
     return number_aliens_x
 
 
-def choose_proper_alien(game):
-    """Retrun proper alien according to game level"""
-    k = 0
-    for k, change_value in enumerate(game.settings.alien_changes):
-        if game.stats.level < change_value:
-            alien = globals()[game.settings.alien_types[k]](
-                game.settings, game.screen, game.alien_bullets
-            )
-            break
-    else:
-        alien = globals()[game.settings.alien_types[-1]](
-            game.settings, game.screen, game.alien_bullets
-        )
-
-    return k, alien
-
-
 def create_alien(game, alien_number, row_number, number_aliens_x):
     """Create alien and add it to the fleet"""
-    k, alien = choose_proper_alien(game)
+    alien = globals()[game.settings.alien_types[game.settings.current_alien]](
+        game.settings, game.screen, game.alien_bullets
+    )
 
-    if k == 0:  # AlienUFO
+    if game.settings.current_alien == 0:  # AlienUFO
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         alien_width = alien.rect.width
         alien.x = alien_width + 2 * alien_width * alien_number
         alien.rect.x = alien.x
-    elif k == 1:  # AlienTentacle
+    elif game.settings.current_alien == 1:  # AlienTentacle
         y = (
             2 * alien.rect.height
             - alien.rect.height
@@ -156,14 +150,17 @@ def create_alien(game, alien_number, row_number, number_aliens_x):
             alien_width + (game.settings.screen_width // number_aliens_x) * alien_number
         )
         alien.rect.x = alien.x
-    elif k == 2:  # AlienShoot
+    elif game.settings.current_alien == 2:  # AlienShoot
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         alien_width = alien.rect.width
         alien.x = alien_width + 2 * alien_width * alien_number
         alien.rect.x = alien.x
-    elif k == 3:  # AlienTeleport
+    elif game.settings.current_alien == 3:  # AlienTeleport
         alien.rect.x = randint(0, game.settings.screen_width - alien.rect.width)
         alien.rect.y = randint(0, game.settings.screen_height - 3 * alien.rect.height)
+    elif game.settings.current_alien == 4:  # AlienBoss1
+        alien.rect.centerx = game.settings.screen_width // 2
+        alien.rect.centery = game.settings.screen_height // 2
 
     game.aliens.add(alien)
 
@@ -204,19 +201,43 @@ def change_fleet_direction(settings, aliens):
 
 def check_bullet_alien_collisions(game):
     """Reaction to the collision between bullet and alien"""
-    collisions = pygame.sprite.groupcollide(game.bullets, game.aliens, True, True)
+    collisions = pygame.sprite.groupcollide(
+        game.bullets,
+        game.aliens,
+        True,
+        game.stats.level < game.settings.alien_changes[-1],
+    )
 
     if collisions:
-        for aliens in collisions.values():
-            game.stats.score += game.settings.alien_points * len(aliens)
-            game.scoreboard.prep_score()
+        if game.stats.level >= game.settings.alien_changes[-1]:
+            print(game.settings.alien_boss_life)
+            game.settings.alien_boss_life = max(
+                0, game.settings.alien_boss_life - len(collisions)
+            )
+            game.stats.score += game.settings.alien_boss_points * len(collisions)
+            print(game.settings.alien_boss_life)
+
+            game.scoreboard.prep_boss_health()
+        else:
+            for aliens in collisions.values():
+                game.stats.score += game.settings.alien_points * len(aliens)
+
+        game.scoreboard.prep_score()
         check_high_score(game.stats, game.scoreboard)
+
+    if game.settings.alien_boss_life <= 0:
+        game.stats.game_active = False
+        pygame.mouse.set_visible(True)
 
     if not game.aliens:
         game.bullets.empty()
         game.settings.increase_speed()
 
         game.stats.level += 1
+
+        if game.stats.level in game.settings.alien_changes:
+            game.settings.current_alien += 1
+
         game.scoreboard.prep_level()
 
         create_fleet(game)
@@ -282,6 +303,10 @@ def check_alien_bullets_ship_collision(game):
 def reset_screen(game):
     """Set default game and screen elements to default state"""
     game.scoreboard.prep_ships()
+
+    if game.stats.level == game.settings.alien_changes[-1]:
+        game.scoreboard.prep_boss_health()
+
     game.aliens.empty()
     game.bullets.empty()
     game.alien_bullets.empty()

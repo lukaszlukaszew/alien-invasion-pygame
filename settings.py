@@ -12,7 +12,7 @@ class Settings:
         self.bg_color = (0, 0, 0)
 
         # ship settings
-        self.ship_limit = 3
+        self.ship_limit = 10
 
         # bullet settings
         self.bullet_width = 3
@@ -20,12 +20,25 @@ class Settings:
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 3
 
+        # boss beam colors
+        self.beam_color_1 = (127, 255, 127)
+        self.beam_color_2 = (15, 255, 80)
+
         # alien settings
         self.fleet_drop_speed = 10
+        self.alien_boss_area = 30
+        self.alien_bullet_width = 3
+        self.alien_boss_points = 2000000
 
         # level settings
-        self.alien_changes = (6, 11, 16, 17, 22, 27, 31)
-        self.alien_types = ("AlienUFO", "AlienTentacle", "AlienShoot", "AlienTeleport")
+        self.alien_changes = (6, 11, 16, 21)
+        self.alien_types = (
+            "AlienUFO",
+            "AlienTentacle",
+            "AlienShoot",
+            "AlienTeleport",
+            "AlienBoss1",
+        )
 
         # game speed change
         self.speedup_scale = 1.1
@@ -48,6 +61,8 @@ class Settings:
         self.alien_speed_factor = 1
         self.fleet_direction = 1
         self.alien_points = 50
+        self.alien_boss_life = 50
+        self.current_alien = 0
 
     def increase_speed(self):
         """Change speed factors due to higher level"""
@@ -55,5 +70,3 @@ class Settings:
         self.bullet_speed_factor *= self.speedup_scale
         self.alien_speed_factor *= self.speedup_scale
         self.alien_points = int(self.alien_points * self.score_scale)
-
-        #print(self.ship_speed_factor, self.bullet_speed_factor, self.alien_speed_factor)
