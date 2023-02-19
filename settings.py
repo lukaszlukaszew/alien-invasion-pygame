@@ -16,10 +16,10 @@ class Settings:
         self.ship_limit = 3
 
         # bullet settings
-        self.bullet_width = 3
+        self.bullet_width = 3  # CHANGED
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
-        self.bullets_allowed = 3
+        self.bullets_allowed = 3  # CHANGED
 
         # boss beam colors
         self.beam_color_1 = (127, 255, 127)
@@ -64,7 +64,7 @@ class Settings:
         self.fleet_direction = 1
         self.alien_points = 50
         self.alien_boss_life = self.starting_alien_boss_life
-        self.current_alien = 0
+        self.current_alien = 0  # CHANGED
 
     def increase_speed(self):
         """Change speed factors due to higher level"""

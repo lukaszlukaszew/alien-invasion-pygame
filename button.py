@@ -19,7 +19,8 @@ class Button:
 
         # buttons rect
         self.rect = pygame.Rect(0, 0, self.width, self.height)
-        self.rect.center = self.screen_rect.center
+        self.rect.centerx = self.screen_rect.centerx
+        self.rect.bottom = self.screen_rect.height - self.rect.height
 
         # message
         self.prep_msg(msg)

@@ -25,14 +25,16 @@ def check_events(game):
 
 def check_keydown_events(event, game):
     """Actions for pressed keys"""
-    if event.key == pygame.K_RIGHT:
+    if event.key == pygame.K_RIGHT and game.stats.game_active:
         game.ship.moving_right = True
-    if event.key == pygame.K_LEFT:
+    if event.key == pygame.K_LEFT and game.stats.game_active:
         game.ship.moving_left = True
-    if event.key == pygame.K_SPACE:
+    if event.key == pygame.K_SPACE and game.stats.game_active:
         fire_bullets(game)
-    if event.key == pygame.K_p:
+    if event.key == pygame.K_p and not game.stats.game_active:
         start_game(game)
+    if event.key == pygame.K_ESCAPE and game.stats.game_active:
+        game.stats.game_not_paused = not game.stats.game_not_paused
     if event.key == pygame.K_q:
         sys.exit()
 
@@ -49,17 +51,30 @@ def update_screen(game):
     """Actions required to screen refresh"""
     game.screen.fill(game.settings.bg_color)
 
-    for bullet in game.bullets.sprites():
-        bullet.draw_bullet()
+    if game.stats.game_active:
+        if game.stats.level <= game.settings.alien_changes[-1]:
 
-    for abullet in game.alien_bullets.sprites():
-        abullet.draw_bullet()
+            for bullet in game.bullets.sprites():
+                bullet.draw_bullet()
 
-    game.ship.blitme()
-    game.aliens.draw(game.screen)
-    game.scoreboard.show_score()
+            for abullet in game.alien_bullets.sprites():
+                abullet.draw_bullet()
+
+            game.ship.blitme()
+            game.aliens.draw(game.screen)
+            game.scoreboard.show_score()
+
+        else:
+            game.stats.game_active = False
+            pygame.mouse.set_visible(True)
+            game.scoreboard.prep_end_screen()
+            game.scoreboard.show_score()
 
     if not game.stats.game_active:
+        if game.stats.game_played:
+            game.scoreboard.prep_end_screen()
+            game.scoreboard.show_score()
+
         game.play_button.draw_button()
 
     pygame.display.flip()
@@ -89,6 +104,7 @@ def fire_bullets(game):
     if len(game.bullets) < game.settings.bullets_allowed:
         new_bullet = ShipBullet(game.settings, game.screen, game.ship)
         game.bullets.add(new_bullet)
+        game.stats.bullets_fired += 1
 
 
 def create_fleet(game):
@@ -98,6 +114,7 @@ def create_fleet(game):
         create_alien(game, 1, 0, 1)
     elif game.stats.level > game.settings.alien_changes[-1]:
         pass
+
     else:
         alien = globals()[game.settings.alien_types[game.settings.current_alien]](
             game.settings, game.screen, game.alien_bullets
@@ -203,7 +220,7 @@ def check_bullet_alien_collisions(game):
     collisions = pygame.sprite.groupcollide(
         game.bullets,
         game.aliens,
-        True,
+        True,  # CHANGED
         game.stats.level < game.settings.alien_changes[-1],
     )
 
@@ -213,18 +230,20 @@ def check_bullet_alien_collisions(game):
                 0, game.settings.alien_boss_life - len(collisions)
             )
             game.stats.score += game.settings.alien_boss_points * len(collisions)
+            game.stats.hits[game.stats.level] += len(collisions)
 
             game.scoreboard.prep_boss_health()
         else:
             for aliens in collisions.values():
                 game.stats.score += game.settings.alien_points * len(aliens)
+                game.stats.hits[game.stats.level] += len(aliens)
 
         game.scoreboard.prep_score()
         check_high_score(game.stats, game.scoreboard)
 
     if game.settings.alien_boss_life <= 0:
-        game.stats.game_active = False
-        pygame.mouse.set_visible(True)
+        game.stats.game_won = True
+        game.aliens.empty()
 
     if not game.aliens:
         game.bullets.empty()
@@ -234,6 +253,7 @@ def check_bullet_alien_collisions(game):
 
         if game.stats.level in game.settings.alien_changes:
             game.settings.current_alien += 1
+            game.stats.ships_left += 1
 
         game.scoreboard.prep_level()
 
@@ -276,6 +296,7 @@ def start_game(game):
     pygame.mouse.set_visible(False)
     game.stats.reset_stats()
     game.stats.game_active = True
+    game.stats.game_played = True
 
     game.scoreboard.prep_score()
     game.scoreboard.prep_high_score()

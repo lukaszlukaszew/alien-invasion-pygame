@@ -48,11 +48,12 @@ class Game:
         while True:
             gf.check_events(self)
 
-            if self.stats.game_active:
-                self.ship.update()
-                gf.update_bullets(self)
-                gf.update_aliens(self)
+            if self.stats.game_not_paused:
+                if self.stats.game_active:
+                    self.ship.update()
+                    gf.update_bullets(self)
+                    gf.update_aliens(self)
 
-            gf.update_screen(self)
+                gf.update_screen(self)
 
             self.clock.tick(60)
