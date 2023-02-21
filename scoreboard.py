@@ -27,7 +27,6 @@ class Scoreboard:
         self.prep_high_score()
         self.prep_level()
         self.prep_ships()
-
         self.prep_boss_health()
 
     def show_score(self):
@@ -132,7 +131,7 @@ class Scoreboard:
         self.boss_health_rect.top = self.score_rect.bottom + 10
 
     def prep_end_screen(self):
-        # vicotry or game over
+        # victory or game over
         if self.stats.game_won:
             self.title_image = self.font.render(
                 "VICTORY!", True, self.settings.text_color
@@ -269,7 +268,7 @@ class Scoreboard:
 
         # bonuses used - value
 
-        self.bonuses_used_image = self.font.render("0", True, self.settings.text_color)
+        self.bonuses_used_image = self.font.render(str(self.stats.bonuses_used), True, self.settings.text_color)
         self.bonuses_used_rect = self.bonuses_used_image.get_rect()
 
         self.bonuses_used_rect.right = self.screen_rect.right - 20

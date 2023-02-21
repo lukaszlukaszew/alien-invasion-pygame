@@ -35,6 +35,8 @@ class Game:
         self.bullets = Group()
         self.alien_bullets = Group()
         self.aliens = Group()
+        self.bonuses = Group()
+        self.active_bonuses = {}
 
         self.clock = pygame.time.Clock()
 
@@ -53,6 +55,7 @@ class Game:
                     self.ship.update()
                     gf.update_bullets(self)
                     gf.update_aliens(self)
+                    gf.update_bonuses(self)
 
                 gf.update_screen(self)
 

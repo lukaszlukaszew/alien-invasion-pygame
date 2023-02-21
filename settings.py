@@ -13,13 +13,13 @@ class Settings:
         self.text_color = (255, 255, 255)
 
         # ship settings
-        self.ship_limit = 3
+        self.ship_limit = 30
 
         # bullet settings
-        self.bullet_width = 3  # CHANGED
+        self.bullet_width = 1200  # CHANGED
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
-        self.bullets_allowed = 3  # CHANGED
+        self.bullets_allowed = 30  # CHANGED
 
         # boss beam colors
         self.beam_color_1 = (127, 255, 127)
@@ -47,6 +47,10 @@ class Settings:
 
         # game score change
         self.score_scale = 1.5
+
+        # bonus settings
+        self.bonus_drop_speed = 3
+        self.bonus_active_time = 600
 
         self.initialize_dynamic_settings()
 

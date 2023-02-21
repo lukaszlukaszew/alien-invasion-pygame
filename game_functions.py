@@ -7,6 +7,7 @@ from random import randint
 import pygame
 from bullet import ShipBullet
 from alien import *
+from bonus import Bonus
 
 
 def check_events(game):
@@ -59,6 +60,9 @@ def update_screen(game):
 
             for abullet in game.alien_bullets.sprites():
                 abullet.draw_bullet()
+
+            for bonus in game.bonuses.sprites():
+                bonus.blitme()
 
             game.ship.blitme()
             game.aliens.draw(game.screen)
@@ -220,7 +224,7 @@ def check_bullet_alien_collisions(game):
     collisions = pygame.sprite.groupcollide(
         game.bullets,
         game.aliens,
-        True,  # CHANGED
+        False,  # CHANGED
         game.stats.level < game.settings.alien_changes[-1],
     )
 
@@ -237,6 +241,10 @@ def check_bullet_alien_collisions(game):
             for aliens in collisions.values():
                 game.stats.score += game.settings.alien_points * len(aliens)
                 game.stats.hits[game.stats.level] += len(aliens)
+
+                for alien in aliens:
+                    if randint(0, 10000) >= 3:
+                        drop_bonus(game, alien.rect.centerx, alien.rect.centery)
 
         game.scoreboard.prep_score()
         check_high_score(game.stats, game.scoreboard)
@@ -330,5 +338,67 @@ def reset_screen(game):
     game.bullets.empty()
     game.alien_bullets.empty()
 
+    for bonus in game.bonuses:
+        bonus.reverse_effect()
+
+    game.bonuses.empty()
+    game.active_bonuses = {}
+
     create_fleet(game)
     game.ship.center_ship()
+
+
+def drop_bonus(game, x, y):
+    """Select and create bonus objcect which will be dropped by killed alien"""
+    choosen_bonus = randint(0, 7)
+
+    if choosen_bonus == 0:  # extra ship
+        bonus = Bonus(game.settings, game.screen, game.stats, x, y, "bonus_add")
+        game.bonuses.add(bonus)
+    elif choosen_bonus == 1:
+        pass
+    elif choosen_bonus == 2:
+        pass
+    elif choosen_bonus == 3:
+        pass
+    elif choosen_bonus == 4:
+        pass
+    elif choosen_bonus == 5:
+        pass
+    elif choosen_bonus == 6:
+        pass
+    elif choosen_bonus == 7:
+        pass
+    elif choosen_bonus == 8:
+        pass
+
+
+def bonus_check_catch(game):
+    """Check if bonus was catched by the player and start additional effects"""
+    collisions = pygame.sprite.spritecollide(game.ship, game.bonuses, True)
+
+    if collisions:
+        for bonus in collisions:
+            bonus.apply_effect()
+            game.active_bonuses[bonus] = 0
+            game.stats.bonuses_used += 1
+
+
+def bonus_check_bottom(game):
+    """Delete bonuses which are out of the screen borders"""
+    for bonus in game.bonuses.copy():
+        if bonus.rect.top >= game.settings.screen_height:
+            game.bonuses.remove(bonus)
+
+
+def update_bonuses(game):
+    """Update, position and remaining time of applied effects."""
+    bonus_check_catch(game)
+    bonus_check_bottom(game)
+    game.bonuses.update()
+
+    for bonus in game.active_bonuses.copy().keys():
+        game.active_bonuses[bonus] += 1
+        if game.active_bonuses[bonus] > game.settings.bonus_active_time:
+            bonus.reverse_effect()
+            game.active_bonuses.pop(bonus)

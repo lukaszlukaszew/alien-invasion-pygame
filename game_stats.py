@@ -26,4 +26,4 @@ class GameStats:
 
         self.bullets_fired = 0
         self.hits = defaultdict(int)
-        self.bonuses_catched = 0
+        self.bonuses_used = 0
