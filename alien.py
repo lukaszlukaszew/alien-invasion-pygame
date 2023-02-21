@@ -25,7 +25,6 @@ class Alien(Sprite, Animation):
         self.rect = None
         self.x = None
         self.bullet_group = group
-        self.shoot_range = 999
 
     def check_edges(self):
         """Returns true if alien is at the edge of the screen"""
@@ -81,7 +80,7 @@ class Alien(Sprite, Animation):
 
     def shoot(self):
         """Attack ship"""
-        if randint(0, 1000) > self.shoot_range:
+        if randint(0, 1000) > self.settings.alien_shooting_range:
             self.bullet_group.add(
                 AlienBullet(
                     self.settings, self.screen, self.rect.centerx, self.rect.centery
@@ -178,7 +177,6 @@ class AlienTeleport(Alien):
         super().__init__(settings, screen, group)
         self.multiplier = 8
         self.frames = 24
-        self.shoot_range = 995
 
         self.prepare_images()
 

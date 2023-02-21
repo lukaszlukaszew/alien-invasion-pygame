@@ -31,6 +31,7 @@ class Settings:
         self.alien_bullet_width = 3
         self.alien_boss_points = 2000000
         self.starting_alien_boss_life = 50
+        self.alien_shooting_range = 998
 
         # level settings
         self.alien_changes = (6, 11, 16, 21)

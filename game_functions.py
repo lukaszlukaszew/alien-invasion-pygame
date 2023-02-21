@@ -246,8 +246,8 @@ def check_bullet_alien_collisions(game):
                     if randint(0, 10000) >= 3:
                         drop_bonus(game, alien.rect.centerx, alien.rect.centery)
 
-        game.scoreboard.prep_score()
-        check_high_score(game.stats, game.scoreboard)
+    game.scoreboard.prep_score()
+    check_high_score(game.stats, game.scoreboard)
 
     if game.settings.alien_boss_life <= 0:
         game.stats.game_won = True
@@ -350,7 +350,7 @@ def reset_screen(game):
 
 def drop_bonus(game, x, y):
     """Select and create bonus objcect which will be dropped by killed alien"""
-    choosen_bonus = randint(0, 7)
+    choosen_bonus = randint(3, 3)
 
     if choosen_bonus == 0:  # extra ship
         bonus = Bonus00(game, x, y, "bonus_add")
@@ -358,10 +358,12 @@ def drop_bonus(game, x, y):
     elif choosen_bonus == 1:  # continuous fire
         bonus = Bonus01(game, x, y, "bonus_weapon")
         game.bonuses.add(bonus)
-    elif choosen_bonus == 2:
-        pass
-    elif choosen_bonus == 3:
-        pass
+    elif choosen_bonus == 2:  # all kill
+        bonus = Bonus02(game, x, y, "bonus_alien")
+        game.bonuses.add(bonus)
+    elif choosen_bonus == 3:  # additional points
+        bonus = Bonus03(game, x, y, "bonus_add")
+        game.bonuses.add(bonus)
     elif choosen_bonus == 4:
         pass
     elif choosen_bonus == 5:
