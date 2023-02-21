@@ -7,7 +7,7 @@ from random import randint
 import pygame
 from bullet import ShipBullet
 from alien import *
-from bonus import Bonus
+from bonus import *
 
 
 def check_events(game):
@@ -353,10 +353,11 @@ def drop_bonus(game, x, y):
     choosen_bonus = randint(0, 7)
 
     if choosen_bonus == 0:  # extra ship
-        bonus = Bonus(game.settings, game.screen, game.stats, x, y, "bonus_add")
+        bonus = Bonus00(game, x, y, "bonus_add")
         game.bonuses.add(bonus)
-    elif choosen_bonus == 1:
-        pass
+    elif choosen_bonus == 1:  # continuous fire
+        bonus = Bonus01(game, x, y, "bonus_weapon")
+        game.bonuses.add(bonus)
     elif choosen_bonus == 2:
         pass
     elif choosen_bonus == 3:

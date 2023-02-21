@@ -10,12 +10,10 @@ from pygame.sprite import Sprite
 class Bonus(Sprite):
     """Class representing bonus dropout"""
 
-    def __init__(self, settings, screen, stats, x, y, bonus_type):
+    def __init__(self, game, x, y, bonus_type):
         """Initialize attributes for general bonus type"""
         super().__init__()
-        self.screen = screen
-        self.settings = settings
-        self.stats = stats
+        self.game = game
         self.bonus_type = bonus_type
         self.direction = 1
         self.load_image(bonus_type)
@@ -29,12 +27,12 @@ class Bonus(Sprite):
 
     def blitme(self):
         """Show Bonus image on the screen in its current position"""
-        self.screen.blit(self.image, self.rect)
+        self.game.screen.blit(self.image, self.rect)
 
     def update(self):
         """Move Bonus object"""
         self.direction *= -1
-        self.rect.y += self.settings.bonus_drop_speed
+        self.rect.y += self.game.settings.bonus_drop_speed
         self.rect.x += self.direction * randint(1, 10)
 
     def apply_effect(self):
@@ -42,3 +40,24 @@ class Bonus(Sprite):
 
     def reverse_effect(self):
         """Reverse the change of the game parameters"""
+
+
+class Bonus00(Bonus):
+    """Add extra ship"""
+
+    def apply_effect(self):
+        """Change the game parameters"""
+        self.game.stats.ships_left += 1
+        self.game.scoreboard.prep_ships()
+
+
+class Bonus01(Bonus):
+    """Continuous fire"""
+
+    def apply_effect(self):
+        """Change the game parameters"""
+        self.game.settings.bullets_allowed = 1000
+
+    def reverse_effect(self):
+        """Reverse the change of the game parameters"""
+        self.game.settings.bullets_allowed = 3

@@ -13,13 +13,13 @@ class Settings:
         self.text_color = (255, 255, 255)
 
         # ship settings
-        self.ship_limit = 30
+        self.ship_limit = 3
 
         # bullet settings
         self.bullet_width = 1200  # CHANGED
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
-        self.bullets_allowed = 30  # CHANGED
+        self.bullets_allowed = 3  # CHANGED
 
         # boss beam colors
         self.beam_color_1 = (127, 255, 127)
