@@ -131,7 +131,14 @@ class Scoreboard:
         self.boss_health_rect.top = self.score_rect.bottom + 10
 
     def prep_end_screen(self):
+        """Transform all end screen info into the on-screen images"""
         # victory or game over
+
+        # self.end_screen_data = {
+        #     "Bullets fired": ['text_image', 'position_text-ud()', 'position_text-lr()', 'value_image', 'position_text-ud()', 'position_text-lr()']
+        # }
+        #
+
         if self.stats.game_won:
             self.title_image = self.font.render(
                 "VICTORY!", True, self.settings.text_color
@@ -268,7 +275,9 @@ class Scoreboard:
 
         # bonuses used - value
 
-        self.bonuses_used_image = self.font.render(str(self.stats.bonuses_used), True, self.settings.text_color)
+        self.bonuses_used_image = self.font.render(
+            str(self.stats.bonuses_used), True, self.settings.text_color
+        )
         self.bonuses_used_rect = self.bonuses_used_image.get_rect()
 
         self.bonuses_used_rect.right = self.screen_rect.right - 20

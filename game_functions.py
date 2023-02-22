@@ -53,6 +53,7 @@ def update_screen(game):
     game.screen.fill(game.settings.bg_color)
 
     if game.stats.game_active:
+        game.background_blitme()
         if game.stats.level <= game.settings.alien_changes[-1]:
 
             for bullet in game.bullets.sprites():
@@ -78,6 +79,8 @@ def update_screen(game):
         if game.stats.game_played:
             game.scoreboard.prep_end_screen()
             game.scoreboard.show_score()
+        else:
+            game.logo_blitme()
 
         game.play_button.draw_button()
 
@@ -224,7 +227,7 @@ def check_bullet_alien_collisions(game):
     collisions = pygame.sprite.groupcollide(
         game.bullets,
         game.aliens,
-        False,  # CHANGED
+        True,  # CHANGED
         game.stats.level < game.settings.alien_changes[-1],
     )
 
@@ -243,7 +246,7 @@ def check_bullet_alien_collisions(game):
                 game.stats.hits[game.stats.level] += len(aliens)
 
                 for alien in aliens:
-                    if randint(0, 10000) >= 9980:
+                    if randint(0, 10000) >= 9900:
                         drop_bonus(game, alien.rect.centerx, alien.rect.centery)
 
     game.scoreboard.prep_score()

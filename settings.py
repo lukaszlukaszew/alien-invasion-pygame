@@ -16,9 +16,9 @@ class Settings:
         self.ship_limit = 3
 
         # bullet settings
-        self.bullet_width = 1200  # CHANGED
+        self.bullet_width = 3  # CHANGED
         self.bullet_height = 15
-        self.bullet_color = (60, 60, 60)
+        self.bullet_color = (255, 255, 0)
         self.bullets_allowed = 3  # CHANGED
 
         # boss beam colors
@@ -59,7 +59,7 @@ class Settings:
         """Creation of game dynamic data"""
 
         # ship settings
-        self.ship_speed_factor = 1.5
+        self.ship_speed_factor = 2
 
         # bullet settings
         self.bullet_speed_factor = 3

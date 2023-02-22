@@ -16,6 +16,7 @@ class Bonus(Sprite):
         self.game = game
         self.bonus_type = bonus_type
         self.direction = 1
+
         self.load_image(bonus_type)
         self.rect.left = x
         self.rect.top = y
@@ -94,6 +95,13 @@ class Bonus03(Bonus):
 class Bonus04(Bonus):
     """Alien movement freeze"""
 
+    def __init__(self, game, x, y, bonus_type):
+        """Extend basic bonus parameters"""
+        super().__init__(game, x, y, bonus_type)
+        self.alien_speed = 0
+        self.level = 0
+        self.shooting_range = 0
+
     def apply_effect(self):
         """Change the game parameters"""
         self.alien_speed = self.game.settings.alien_horizontal_speed_factor
@@ -116,6 +124,14 @@ class Bonus04(Bonus):
 
 class Bonus05(Bonus):
     """Alien speed decrease"""
+
+    def __init__(self, game, x, y, bonus_type):
+        """Extend basic bonus parameters"""
+        super().__init__(game, x, y, bonus_type)
+        self.alien_horizontal_speed = 0
+        self.alien_vertical_speed = 0
+        self.level = 0
+        self.alien_bullet_speed = 0
 
     def apply_effect(self):
         """Change the game parameters"""

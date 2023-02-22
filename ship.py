@@ -10,7 +10,7 @@ class Ship(Sprite, Animation):
 
     animations = {}
 
-    def __init__(self, settings, screen):
+    def __init__(self, settings, screen, x=None):
         """Create ship object at the center & bottom of the screen"""
         super().__init__()
 
@@ -34,6 +34,8 @@ class Ship(Sprite, Animation):
         self.moving_right = False
         self.moving_left = False
 
+        self.screen_x = x
+
     def __str__(self):
         return "ship"
 
@@ -55,11 +57,16 @@ class Ship(Sprite, Animation):
             if self.moving_right and self.rect.right < self.screen_rect.right:
                 self.center += self.settings.ship_speed_factor
                 self.image = Ship.animations["move_right"][self.current_frame // 10]
+                self.screen_x -= self.settings.ship_speed_factor // 2
+
             if self.moving_left and self.rect.left > 0:
                 self.center -= self.settings.ship_speed_factor
                 self.image = Ship.animations["move_left"][self.current_frame // 10]
+                self.screen_x += self.settings.ship_speed_factor // 2
 
         self.rect.centerx = self.center
+
+        return self.screen_x
 
     def center_ship(self):
         """Move ship to the center of the screen"""
