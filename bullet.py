@@ -52,6 +52,7 @@ class AlienBullet(Bullet, Sprite):
         """Create AlienBullet object at the center of the alien"""
         super().__init__(settings, screen)
         self.direction = 1
+        self.speed_factor = settings.alien_bullet_speed_factor
 
         self.rect = pygame.Rect(
             x,

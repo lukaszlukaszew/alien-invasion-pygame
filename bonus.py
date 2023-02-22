@@ -91,39 +91,55 @@ class Bonus03(Bonus):
         self.game.scoreboard.prep_score()
 
 
-#
-# class Bonus03(Bonus):
-#     """Alien movement freeze"""
-#
-#     def apply_effect(self):
-#         """Change the game parameters"""
-#         print("apply")
-#         self.alien_speed = self.game.settings.alien_speed_factor
-#         self.level = self.game.stats.level
-#         self.game.alien_speed_factor = 0
-#
-#         self.alien_shooting_range = self.game.settings.alien_shooting_range
-#         self.game.settings.alien_shooting_range = 1000
-#
-#         for alien in self.game.aliens:
-#             alien.settings.alien_speed_factor = 0
-#             alien.settings.alien_shooting_range = 1000
-#
-#         # print(self.game.alien_speed_factor)
-#
-#     def reverse_effect(self):
-#         """Reverse the change of the game parameters"""
-#         print("reverse")
-#         print(self.game.alien_speed_factor, self.alien_speed)
-#         self.game.alien_speed_factor = self.alien_speed
-#         print(self.game.alien_speed_factor, self.alien_speed)
-#         for _ in range(self.game.stats.level - self.level):
-#             self.game.alien_speed_factor *= self.game.settings.speedup_scale
-#
-#         self.game.settings.alien_shooting_range = self.alien_shooting_range
-#
-#         for alien in self.game.aliens:
-#             alien.settings.alien_speed_factor = self.game.settings.alien_speed_factor
-#             alien.settings.alien_shooting_range = (
-#                 self.game.settings.alien_shooting_range
-#             )
+class Bonus04(Bonus):
+    """Alien movement freeze"""
+
+    def apply_effect(self):
+        """Change the game parameters"""
+        self.alien_speed = self.game.settings.alien_horizontal_speed_factor
+        self.level = self.game.stats.level
+        self.game.settings.alien_horizontal_speed_factor = 0
+
+        self.shooting_range = self.game.settings.alien_shooting_range
+        self.game.settings.alien_shooting_range = 1000
+
+    def reverse_effect(self):
+        """Reverse the change of the game parameters"""
+        self.game.settings.alien_horizontal_speed_factor = self.alien_speed
+        for _ in range(self.game.stats.level - self.level):
+            self.game.settings.alien_horizontal_speed_factor *= (
+                self.game.settings.speedup_scale
+            )
+
+        self.game.settings.alien_shooting_range = self.shooting_range
+
+
+class Bonus05(Bonus):
+    """Alien speed decrease"""
+
+    def apply_effect(self):
+        """Change the game parameters"""
+        self.level = self.game.stats.level
+
+        self.alien_horizontal_speed = self.game.settings.alien_horizontal_speed_factor
+        self.game.settings.alien_horizontal_speed_factor //= 2
+
+        self.alien_vertical_speed = self.game.settings.alien_vertical_speed_factor
+        self.game.settings.alien_vertical_speed_factor //= 2
+
+        self.alien_bullet_speed = self.game.settings.alien_bullet_speed_factor
+        self.game.settings.alien_bullet_speed_factor //= 2
+
+    def reverse_effect(self):
+        """Reverse the change of the game parameters"""
+        self.game.settings.alien_horizontal_speed_factor = self.alien_horizontal_speed
+        self.game.settings.alien_vertical_speed_factor = self.alien_vertical_speed
+        self.game.settings.alien_bullet_speed_factor = self.alien_bullet_speed
+
+        for _ in range(self.game.stats.level - self.level):
+            self.game.settings.alien_horizontal_speed_factor *= (
+                self.game.settings.speedup_scale
+            )
+            self.game.settings.alien_bullet_speed_factor *= (
+                self.game.settings.speedup_scale
+            )

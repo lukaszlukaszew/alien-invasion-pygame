@@ -63,9 +63,11 @@ class Settings:
 
         # bullet settings
         self.bullet_speed_factor = 3
+        self.alien_bullet_speed_factor = 3
 
         # alien settings
-        self.alien_speed_factor = 1
+        self.alien_vertical_speed_factor = 1
+        self.alien_horizontal_speed_factor = 1
         self.fleet_direction = 1
         self.alien_points = 50
         self.alien_boss_life = self.starting_alien_boss_life
@@ -75,5 +77,6 @@ class Settings:
         """Change speed factors due to higher level"""
         self.ship_speed_factor *= self.speedup_scale
         self.bullet_speed_factor *= self.speedup_scale
-        self.alien_speed_factor *= self.speedup_scale
+        self.alien_bullet_speed_factor *= self.speedup_scale
+        self.alien_horizontal_speed_factor *= self.speedup_scale
         self.alien_points = int(self.alien_points * self.score_scale)

@@ -75,7 +75,7 @@ class Alien(Sprite, Animation):
             self.frame // self.multiplier
         ]
 
-        self.x += self.settings.alien_speed_factor * self.settings.fleet_direction
+        self.x += self.settings.alien_horizontal_speed_factor * self.settings.fleet_direction
         self.rect.x = self.x
 
     def shoot(self):
@@ -121,15 +121,15 @@ class AlienTentacle(Alien):
             self.frame // self.multiplier
         ]
 
-        self.x += self.settings.alien_speed_factor * self.settings.fleet_direction
+        self.x += self.settings.alien_horizontal_speed_factor * self.settings.fleet_direction
         self.rect.x = self.x
 
         screen_rect = self.screen.get_rect()
 
         if self.rect.centerx >= screen_rect.centerx:
-            self.rect.y -= self.settings.fleet_direction
+            self.rect.y -= self.settings.fleet_direction * self.settings.alien_vertical_speed_factor
         else:
-            self.rect.y += self.settings.fleet_direction
+            self.rect.y += self.settings.fleet_direction * self.settings.alien_vertical_speed_factor
 
 
 class AlienShoot(Alien):
@@ -154,14 +154,14 @@ class AlienShoot(Alien):
         ]
         self.rect.y = max(
             min(
-                self.rect.y + randint(-1, 1) * randint(1, 3),
+                self.rect.y + randint(-1, 1) * randint(0, self.settings.alien_vertical_speed_factor),
                 self.settings.screen_height * 2 / 3,
             ),
             0,
         )
         self.rect.x = max(
             min(
-                self.rect.x + randint(-1, 1) * randint(1, 3),
+                self.rect.x + randint(-1, 1) * randint(0, int(self.settings.alien_horizontal_speed_factor)),
                 self.settings.screen_width - self.rect.width,
             ),
             0,

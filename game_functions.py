@@ -243,7 +243,7 @@ def check_bullet_alien_collisions(game):
                 game.stats.hits[game.stats.level] += len(aliens)
 
                 for alien in aliens:
-                    if randint(0, 10000) >= 3:
+                    if randint(0, 10000) >= 9980:
                         drop_bonus(game, alien.rect.centerx, alien.rect.centery)
 
     game.scoreboard.prep_score()
@@ -262,6 +262,7 @@ def check_bullet_alien_collisions(game):
         if game.stats.level in game.settings.alien_changes:
             game.settings.current_alien += 1
             game.stats.ships_left += 1
+            game.scoreboard.prep_ships()
 
         game.scoreboard.prep_level()
 
@@ -338,7 +339,7 @@ def reset_screen(game):
     game.bullets.empty()
     game.alien_bullets.empty()
 
-    for bonus in game.bonuses:
+    for bonus in game.active_bonuses.keys():
         bonus.reverse_effect()
 
     game.bonuses.empty()
@@ -350,30 +351,22 @@ def reset_screen(game):
 
 def drop_bonus(game, x, y):
     """Select and create bonus objcect which will be dropped by killed alien"""
-    choosen_bonus = randint(3, 3)
+    choosen_bonus = randint(0, 5)
 
     if choosen_bonus == 0:  # extra ship
         bonus = Bonus00(game, x, y, "bonus_add")
-        game.bonuses.add(bonus)
     elif choosen_bonus == 1:  # continuous fire
         bonus = Bonus01(game, x, y, "bonus_weapon")
-        game.bonuses.add(bonus)
     elif choosen_bonus == 2:  # all kill
         bonus = Bonus02(game, x, y, "bonus_alien")
-        game.bonuses.add(bonus)
     elif choosen_bonus == 3:  # additional points
         bonus = Bonus03(game, x, y, "bonus_add")
-        game.bonuses.add(bonus)
-    elif choosen_bonus == 4:
-        pass
-    elif choosen_bonus == 5:
-        pass
-    elif choosen_bonus == 6:
-        pass
-    elif choosen_bonus == 7:
-        pass
-    elif choosen_bonus == 8:
-        pass
+    elif choosen_bonus == 4:  # alien movement freeze
+        bonus = Bonus04(game, x, y, "bonus_alien")
+    elif choosen_bonus == 5:  # alien speed decrease
+        bonus = Bonus05(game, x, y, "bonus_alien")
+
+    game.bonuses.add(bonus)
 
 
 def bonus_check_catch(game):
