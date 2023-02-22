@@ -6,6 +6,8 @@ from random import randint
 import pygame
 from pygame.sprite import Sprite
 
+from explosion import Boom
+
 
 class Bonus(Sprite):
     """Class representing bonus dropout"""
@@ -80,7 +82,9 @@ class Bonus02(Bonus):
                 self.game.aliens
             )
 
-            self.game.aliens.empty()
+            for alien in self.game.aliens.copy():
+                self.game.explosions.add(Boom(self.game.screen, alien.rect.centerx, alien.rect.centery))
+                self.game.aliens.remove(alien)
 
 
 class Bonus03(Bonus):

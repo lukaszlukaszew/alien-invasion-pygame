@@ -134,11 +134,6 @@ class Scoreboard:
         """Transform all end screen info into the on-screen images"""
         # victory or game over
 
-        # self.end_screen_data = {
-        #     "Bullets fired": ['text_image', 'position_text-ud()', 'position_text-lr()', 'value_image', 'position_text-ud()', 'position_text-lr()']
-        # }
-        #
-
         if self.stats.game_won:
             self.title_image = self.font.render(
                 "VICTORY!", True, self.settings.text_color

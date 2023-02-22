@@ -6,6 +6,7 @@ from random import randint
 
 import pygame
 from bullet import ShipBullet
+from explosion import Boom
 from alien import *
 from bonus import *
 
@@ -83,6 +84,9 @@ def update_screen(game):
             game.logo_blitme()
 
         game.play_button.draw_button()
+
+    for boom in game.explosions.sprites():
+        boom.blitme()
 
     pygame.display.flip()
 
@@ -233,6 +237,21 @@ def check_bullet_alien_collisions(game):
 
     if collisions:
         if game.stats.level >= game.settings.alien_changes[-1]:
+            for bullet, aliens in collisions.items():
+                for alien in aliens:
+                    explode(game, bullet.rect.centerx, alien.rect.bottom)
+                    for _ in range(
+                        (
+                            game.settings.starting_alien_boss_life
+                            - game.settings.alien_boss_life
+                        )
+                        // 10
+                    ):
+                        explode(
+                            game,
+                            randint(alien.rect.left, alien.rect.right),
+                            randint(alien.rect.top, alien.rect.bottom),
+                        )
             game.settings.alien_boss_life = max(
                 0, game.settings.alien_boss_life - len(collisions)
             )
@@ -246,8 +265,9 @@ def check_bullet_alien_collisions(game):
                 game.stats.hits[game.stats.level] += len(aliens)
 
                 for alien in aliens:
-                    if randint(0, 10000) >= 9900:
+                    if randint(0, 100) >= 35:
                         drop_bonus(game, alien.rect.centerx, alien.rect.centery)
+                    explode(game, alien.rect.centerx, alien.rect.centery)
 
     game.scoreboard.prep_score()
     check_high_score(game.stats, game.scoreboard)
@@ -274,6 +294,7 @@ def check_bullet_alien_collisions(game):
 
 def ship_hit(game):
     """Reaction in case of collision of ship and alien"""
+
     if game.stats.ships_left > 0:
         game.stats.ships_left -= 1
 
@@ -348,13 +369,15 @@ def reset_screen(game):
     game.bonuses.empty()
     game.active_bonuses = {}
 
+    game.explosions.empty()
+
     create_fleet(game)
     game.ship.center_ship()
 
 
 def drop_bonus(game, x, y):
     """Select and create bonus objcect which will be dropped by killed alien"""
-    choosen_bonus = randint(0, 5)
+    choosen_bonus = randint(2, 2)
 
     if choosen_bonus == 0:  # extra ship
         bonus = Bonus00(game, x, y, "bonus_add")
@@ -401,3 +424,14 @@ def update_bonuses(game):
         if game.active_bonuses[bonus] > game.settings.bonus_active_time:
             bonus.reverse_effect()
             game.active_bonuses.pop(bonus)
+
+
+def update_explosions(game):
+    game.explosions.update()
+    for boom in game.explosions.copy():
+        if not boom.frame:
+            game.explosions.remove(boom)
+
+
+def explode(game, x, y):
+    game.explosions.add(Boom(game.screen, x, y))
