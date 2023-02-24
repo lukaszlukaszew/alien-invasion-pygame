@@ -13,22 +13,17 @@ class Alien(Sprite, Animation):
 
     animations = {}
 
-    def __init__(self, settings, screen, group):
+    def __init__(self, game):
         """Initialization of basic instance attributes"""
         super().__init__()
-        self.screen = screen
-        self.settings = settings
-        self.image = None
+        self.game = game
+        self.multiplier = 1
         self.frames = 1
         self.frame = 1
-        self.multiplier = 1
-        self.rect = None
-        self.x = None
-        self.bullet_group = group
 
     def check_edges(self):
         """Returns true if alien is at the edge of the screen"""
-        screen_rect = self.screen.get_rect()
+        screen_rect = self.game.screen.get_rect()
         if self.rect.right >= screen_rect.right:
             return True
         if self.rect.left <= 0:
@@ -37,11 +32,15 @@ class Alien(Sprite, Animation):
 
     def blitme(self):
         """Show alien in its current position"""
-        self.screen.blit(self.image, self.rect)
+        self.game.screen.blit(self.image, self.rect)
 
     def prepare_images(self):
         """Prepare all needed images for aliens"""
-        self.load_images(str(self), type(self).__name__, self.frames, Alien.animations)
+
+        if not Alien.animations.get(type(self).__name__):
+            self.load_images(
+                str(self), type(self).__name__, self.frames, Alien.animations
+            )
 
         self.frame = randint(
             0, len(Alien.animations[type(self).__name__]) * self.multiplier - 1
@@ -52,7 +51,6 @@ class Alien(Sprite, Animation):
         ]
 
         self.rect = self.image.get_rect()
-
         self.x = float(self.rect.x)
 
         self.place_alien_on_screen()
@@ -75,25 +73,32 @@ class Alien(Sprite, Animation):
             self.frame // self.multiplier
         ]
 
-        self.x += self.settings.alien_horizontal_speed_factor * self.settings.fleet_direction
+        self.x += (
+            self.game.settings.alien_horizontal_speed_factor
+            * self.game.settings.fleet_direction
+        )
         self.rect.x = self.x
 
     def shoot(self):
         """Attack ship"""
-        if randint(0, 1000) > self.settings.alien_shooting_range:
-            self.bullet_group.add(
+        if randint(0, 1000) > self.game.settings.alien_shooting_range:
+            self.game.alien_bullets.add(
                 AlienBullet(
-                    self.settings, self.screen, self.rect.centerx, self.rect.centery
+                    self.game.settings,
+                    self.game.screen,
+                    self.rect.centerx,
+                    self.rect.centery,
                 )
             )
+            self.game.sounds.play_sound("alien_shoot")
 
 
 class AlienUFO(Alien):
     """Class representing UFO-type of alien and its functionalities"""
 
-    def __init__(self, settings, screen, group):
+    def __init__(self, game):
         """Initialize attributes specific to AlienUFO object"""
-        super().__init__(settings, screen, group)
+        super().__init__(game)
         self.multiplier = 12
         self.frames = 9
 
@@ -103,9 +108,9 @@ class AlienUFO(Alien):
 class AlienTentacle(Alien):
     """Class representing alien with tentacles and its functionalities"""
 
-    def __init__(self, settings, screen, group):
+    def __init__(self, game):
         """Initialize attributes specific to AlienTentacle object"""
-        super().__init__(settings, screen, group)
+        super().__init__(game)
         self.multiplier = 18
         self.frames = 6
 
@@ -121,23 +126,32 @@ class AlienTentacle(Alien):
             self.frame // self.multiplier
         ]
 
-        self.x += self.settings.alien_horizontal_speed_factor * self.settings.fleet_direction
+        self.x += (
+            self.game.settings.alien_horizontal_speed_factor
+            * self.game.settings.fleet_direction
+        )
         self.rect.x = self.x
 
-        screen_rect = self.screen.get_rect()
+        screen_rect = self.game.screen.get_rect()
 
         if self.rect.centerx >= screen_rect.centerx:
-            self.rect.y -= self.settings.fleet_direction * self.settings.alien_vertical_speed_factor
+            self.rect.y -= (
+                self.game.settings.fleet_direction
+                * self.game.settings.alien_vertical_speed_factor
+            )
         else:
-            self.rect.y += self.settings.fleet_direction * self.settings.alien_vertical_speed_factor
+            self.rect.y += (
+                self.game.settings.fleet_direction
+                * self.game.settings.alien_vertical_speed_factor
+            )
 
 
 class AlienShoot(Alien):
     """Class representing shooting alien and its functionalities"""
 
-    def __init__(self, settings, screen, group):
+    def __init__(self, game):
         """Initialize attributes specific to AlienShoot object"""
-        super().__init__(settings, screen, group)
+        super().__init__(game)
         self.multiplier = 16
         self.frames = 4
 
@@ -154,15 +168,19 @@ class AlienShoot(Alien):
         ]
         self.rect.y = max(
             min(
-                self.rect.y + randint(-1, 1) * randint(0, self.settings.alien_vertical_speed_factor),
-                self.settings.screen_height * 2 / 3,
+                self.rect.y
+                + randint(-1, 1)
+                * randint(0, self.game.settings.alien_vertical_speed_factor),
+                self.game.settings.screen_height * 2 / 3,
             ),
             0,
         )
         self.rect.x = max(
             min(
-                self.rect.x + randint(-1, 1) * randint(0, int(self.settings.alien_horizontal_speed_factor)),
-                self.settings.screen_width - self.rect.width,
+                self.rect.x
+                + randint(-1, 1)
+                * randint(0, int(self.game.settings.alien_horizontal_speed_factor)),
+                self.game.settings.screen_width - self.rect.width,
             ),
             0,
         )
@@ -172,9 +190,9 @@ class AlienShoot(Alien):
 class AlienTeleport(Alien):
     """Class representing teleporting alien and it's functionalities"""
 
-    def __init__(self, settings, screen, group):
+    def __init__(self, game):
         """Initialize attributes specific to AlienTentacle object"""
-        super().__init__(settings, screen, group)
+        super().__init__(game)
         self.multiplier = 8
         self.frames = 24
 
@@ -191,8 +209,10 @@ class AlienTeleport(Alien):
         ]
 
         if not self.frame:
-            self.rect.x = randint(0, self.settings.screen_width - self.rect.width)
-            self.rect.y = randint(0, self.settings.screen_height - 2 * self.rect.height)
+            self.rect.x = randint(0, self.game.settings.screen_width - self.rect.width)
+            self.rect.y = randint(
+                0, self.game.settings.screen_height - 2 * self.rect.height
+            )
 
         if 7 <= self.frame // self.multiplier <= 11:
             self.shoot()
@@ -201,9 +221,9 @@ class AlienTeleport(Alien):
 class AlienBoss1(Alien):
     """Class representing first boss in the game"""
 
-    def __init__(self, settings, screen, group):
+    def __init__(self, game):
         """Initialize attributes specific to AlienBoss1 object"""
-        super().__init__(settings, screen, group)
+        super().__init__(game)
         self.multiplier = 8
         self.boss_animations = {
             "main": 6,
@@ -226,7 +246,7 @@ class AlienBoss1(Alien):
         self.image = Alien.animations[type(self).__name__ + self.move][self.frame]
 
         self.rect = self.image.get_rect()
-        self.screen_rect = screen.get_rect()
+        self.screen_rect = self.game.screen.get_rect()
 
         self.rect.centerx = self.screen_rect.centerx
         self.rect.centery = self.screen_rect.centery
@@ -259,7 +279,10 @@ class AlienBoss1(Alien):
     def left_up(self):
         """Calculate and move alien towards left upper corner of the screen"""
         current_move = randint(
-            0, min(self.rect.centerx, self.rect.centery, self.settings.alien_boss_area)
+            0,
+            min(
+                self.rect.centerx, self.rect.centery, self.game.settings.alien_boss_area
+            ),
         )
         self.rect.centerx = max(0, self.rect.centerx - current_move)
         self.rect.centery = max(0, self.rect.centery - current_move)
@@ -270,7 +293,7 @@ class AlienBoss1(Alien):
             0,
             min(
                 self.screen_rect.height // 4 * 3 - self.rect.centery,
-                self.settings.alien_boss_area,
+                self.game.settings.alien_boss_area,
             ),
         )
         self.rect.centerx = max(0, self.rect.centerx - current_move)
@@ -283,7 +306,7 @@ class AlienBoss1(Alien):
             min(
                 self.screen_rect.width - self.rect.centerx,
                 self.rect.centery,
-                self.settings.alien_boss_area,
+                self.game.settings.alien_boss_area,
             ),
         )
         self.rect.centerx = max(0, self.rect.centerx + current_move)
@@ -296,7 +319,7 @@ class AlienBoss1(Alien):
             min(
                 self.screen_rect.width - self.rect.centerx,
                 self.screen_rect.height // 4 * 3 - self.rect.centery,
-                self.settings.alien_boss_area,
+                self.game.settings.alien_boss_area,
             ),
         )
         self.rect.centerx = self.rect.centerx + current_move
@@ -305,14 +328,15 @@ class AlienBoss1(Alien):
     def shoot(self):
         """Attack ship"""
         if 5 <= self.frame // self.multiplier <= 9:
-            self.bullet_group.add(
+            self.game.alien_bullets.add(
                 AlienBossBeam(
-                    self.settings,
-                    self.screen,
+                    self.game.settings,
+                    self.game.screen,
                     self.rect.centerx,
                     self.rect.centery,
                     self.frame // self.multiplier,
                 )
             )
+            self.game.sounds.play_sound("alien_beam")
         elif self.frame // self.multiplier == 10:
-            self.bullet_group.empty()
+            self.game.alien_bullets.empty()

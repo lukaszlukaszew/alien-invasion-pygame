@@ -18,7 +18,7 @@ class Boom(Sprite):
         super().__init__()
         self.screen = screen
         self.frame = 1
-        self.multiplier = 1
+        self.multiplier = 2
         self.prepare_images(x, y)
 
     def blitme(self):

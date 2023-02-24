@@ -116,6 +116,7 @@ def fire_bullets(game):
         new_bullet = ShipBullet(game.settings, game.screen, game.ship)
         game.bullets.add(new_bullet)
         game.stats.bullets_fired += 1
+        game.sounds.play_sound("ship_shoot")
 
 
 def create_fleet(game):
@@ -123,13 +124,13 @@ def create_fleet(game):
 
     if game.stats.level == game.settings.alien_changes[-1]:
         create_alien(game, 1, 0, 1)
+        game.sounds.fade_out("alien_alien_background")
+        game.sounds.play_sound("alien_boss_background")
     elif game.stats.level > game.settings.alien_changes[-1]:
         pass
 
     else:
-        alien = globals()[game.settings.alien_types[game.settings.current_alien]](
-            game.settings, game.screen, game.alien_bullets
-        )
+        alien = globals()[game.settings.alien_types[game.settings.current_alien]](game)
 
         number_aliens_x = get_number_aliens_x(game.settings, alien.rect.width)
         number_rows = get_number_rows(
@@ -154,9 +155,7 @@ def get_number_aliens_x(settings, alien_width):
 
 def create_alien(game, alien_number, row_number, number_aliens_x):
     """Create alien and add it to the fleet"""
-    alien = globals()[game.settings.alien_types[game.settings.current_alien]](
-        game.settings, game.screen, game.alien_bullets
-    )
+    alien = globals()[game.settings.alien_types[game.settings.current_alien]](game)
 
     if game.settings.current_alien == 0:  # AlienUFO
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
@@ -177,14 +176,14 @@ def create_alien(game, alien_number, row_number, number_aliens_x):
             alien_width + (game.settings.screen_width // number_aliens_x) * alien_number
         )
         alien.rect.x = alien.x
-    elif game.settings.current_alien == 2:  # AlienShoot
+    elif game.settings.current_alien == 2:  # AlienTeleport
+        alien.rect.x = randint(0, game.settings.screen_width - alien.rect.width)
+        alien.rect.y = randint(0, game.settings.screen_height - 3 * alien.rect.height)
+    elif game.settings.current_alien == 3:  # AlienShoot
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
         alien_width = alien.rect.width
         alien.x = alien_width + 2 * alien_width * alien_number
         alien.rect.x = alien.x
-    elif game.settings.current_alien == 3:  # AlienTeleport
-        alien.rect.x = randint(0, game.settings.screen_width - alien.rect.width)
-        alien.rect.y = randint(0, game.settings.screen_height - 3 * alien.rect.height)
     elif game.settings.current_alien == 4:  # AlienBoss1
         alien.rect.centerx = game.settings.screen_width // 2
         alien.rect.centery = game.settings.screen_height // 2
@@ -265,7 +264,7 @@ def check_bullet_alien_collisions(game):
                 game.stats.hits[game.stats.level] += len(aliens)
 
                 for alien in aliens:
-                    if randint(0, 100) >= 35:
+                    if randint(0, 10000) >= game.settings.bonus_drop_rate:
                         drop_bonus(game, alien.rect.centerx, alien.rect.centery)
                     explode(game, alien.rect.centerx, alien.rect.centery)
 
@@ -297,7 +296,7 @@ def ship_hit(game):
 
     if game.stats.ships_left > 0:
         game.stats.ships_left -= 1
-
+        game.sounds.play_sound("ship_hit_reset")
         reset_screen(game)
 
         sleep(0.5)
@@ -319,6 +318,11 @@ def check_play_button(game, mouse_x, mouse_y):
     """Reaction to button click"""
     button_clicked = game.play_button.rect.collidepoint(mouse_x, mouse_y)
     if button_clicked and not game.stats.game_active:
+        game.sounds.play_sound("menu_button_play")
+        game.sounds.play_sound("alien_alien_background", -1)
+        game.sounds.fade_out("menu_start")
+        game.sounds.fade_out("menu_end_screen")
+        game.sounds.fade_out("alien_boss_background")
         start_game(game)
 
 
@@ -377,7 +381,7 @@ def reset_screen(game):
 
 def drop_bonus(game, x, y):
     """Select and create bonus objcect which will be dropped by killed alien"""
-    choosen_bonus = randint(2, 2)
+    choosen_bonus = randint(0, 5)
 
     if choosen_bonus == 0:  # extra ship
         bonus = Bonus00(game, x, y, "bonus_add")
@@ -404,6 +408,7 @@ def bonus_check_catch(game):
             bonus.apply_effect()
             game.active_bonuses[bonus] = 0
             game.stats.bonuses_used += 1
+            game.sounds.play_sound("ship_bonus_catch")
 
 
 def bonus_check_bottom(game):
@@ -435,3 +440,13 @@ def update_explosions(game):
 
 def explode(game, x, y):
     game.explosions.add(Boom(game.screen, x, y))
+    game.sounds.play_sound("explosion")
+
+
+def check_ship_movement(game):
+    if game.ship.moving_left or game.ship.moving_right:
+        if not game.sounds.channels["ship_move"].get_busy():
+            game.sounds.play_sound("ship_move")
+    else:
+        if game.sounds.channels["ship_move"].get_busy():
+            game.sounds.channels["ship_move"].stop()

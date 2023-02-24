@@ -31,15 +31,15 @@ class Settings:
         self.alien_bullet_width = 3
         self.alien_boss_points = 2000000
         self.starting_alien_boss_life = 50
-        self.alien_shooting_range = 998
+        self.alien_shooting_range = 999
 
         # level settings
         self.alien_changes = (6, 11, 16, 21)
         self.alien_types = (
             "AlienUFO",
             "AlienTentacle",
-            "AlienShoot",
             "AlienTeleport",
+            "AlienShoot",
             "AlienBoss1",
         )
 
@@ -73,6 +73,9 @@ class Settings:
         self.alien_boss_life = self.starting_alien_boss_life
         self.current_alien = 0  # CHANGED
 
+        # bonus settings
+        self.bonus_drop_rate = 9999
+
     def increase_speed(self):
         """Change speed factors due to higher level"""
         self.ship_speed_factor *= self.speedup_scale
@@ -80,3 +83,4 @@ class Settings:
         self.alien_bullet_speed_factor *= self.speedup_scale
         self.alien_horizontal_speed_factor *= self.speedup_scale
         self.alien_points = int(self.alien_points * self.score_scale)
+        self.bonus_drop_rate /= self.speedup_scale

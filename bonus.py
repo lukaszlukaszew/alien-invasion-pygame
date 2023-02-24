@@ -83,7 +83,10 @@ class Bonus02(Bonus):
             )
 
             for alien in self.game.aliens.copy():
-                self.game.explosions.add(Boom(self.game.screen, alien.rect.centerx, alien.rect.centery))
+                self.game.explosions.add(
+                    Boom(self.game.screen, alien.rect.centerx, alien.rect.centery)
+                )
+                self.game.sounds.play_sound("explosion")
                 self.game.aliens.remove(alien)
 
 
@@ -108,22 +111,24 @@ class Bonus04(Bonus):
 
     def apply_effect(self):
         """Change the game parameters"""
-        self.alien_speed = self.game.settings.alien_horizontal_speed_factor
-        self.level = self.game.stats.level
-        self.game.settings.alien_horizontal_speed_factor = 0
+        if self.game.settings.alien_horizontal_speed_factor:
+            self.alien_speed = self.game.settings.alien_horizontal_speed_factor
+            self.level = self.game.stats.level
+            self.game.settings.alien_horizontal_speed_factor = 0
 
-        self.shooting_range = self.game.settings.alien_shooting_range
-        self.game.settings.alien_shooting_range = 1000
+            self.shooting_range = self.game.settings.alien_shooting_range
+            self.game.settings.alien_shooting_range = 1000
 
     def reverse_effect(self):
         """Reverse the change of the game parameters"""
-        self.game.settings.alien_horizontal_speed_factor = self.alien_speed
-        for _ in range(self.game.stats.level - self.level):
-            self.game.settings.alien_horizontal_speed_factor *= (
-                self.game.settings.speedup_scale
-            )
+        if self.level + self.alien_speed + self.shooting_range:
+            self.game.settings.alien_horizontal_speed_factor = self.alien_speed
+            for _ in range(self.game.stats.level - self.level):
+                self.game.settings.alien_horizontal_speed_factor *= (
+                    self.game.settings.speedup_scale
+                )
 
-        self.game.settings.alien_shooting_range = self.shooting_range
+            self.game.settings.alien_shooting_range = self.shooting_range
 
 
 class Bonus05(Bonus):
@@ -139,27 +144,43 @@ class Bonus05(Bonus):
 
     def apply_effect(self):
         """Change the game parameters"""
-        self.level = self.game.stats.level
+        if (
+            self.game.settings.alien_horizontal_speed_factor
+            + self.game.settings.alien_vertical_speed_factor
+            + self.game.settings.alien_bullet_speed_factor
+        ):
 
-        self.alien_horizontal_speed = self.game.settings.alien_horizontal_speed_factor
-        self.game.settings.alien_horizontal_speed_factor //= 2
+            self.level = self.game.stats.level
 
-        self.alien_vertical_speed = self.game.settings.alien_vertical_speed_factor
-        self.game.settings.alien_vertical_speed_factor //= 2
+            self.alien_horizontal_speed = (
+                self.game.settings.alien_horizontal_speed_factor
+            )
+            self.game.settings.alien_horizontal_speed_factor //= 2
 
-        self.alien_bullet_speed = self.game.settings.alien_bullet_speed_factor
-        self.game.settings.alien_bullet_speed_factor //= 2
+            self.alien_vertical_speed = self.game.settings.alien_vertical_speed_factor
+            self.game.settings.alien_vertical_speed_factor //= 2
+
+            self.alien_bullet_speed = self.game.settings.alien_bullet_speed_factor
+            self.game.settings.alien_bullet_speed_factor //= 2
 
     def reverse_effect(self):
         """Reverse the change of the game parameters"""
-        self.game.settings.alien_horizontal_speed_factor = self.alien_horizontal_speed
-        self.game.settings.alien_vertical_speed_factor = self.alien_vertical_speed
-        self.game.settings.alien_bullet_speed_factor = self.alien_bullet_speed
+        if (
+            self.alien_horizontal_speed
+            + self.alien_vertical_speed
+            + self.level
+            + self.alien_bullet_speed
+        ):
+            self.game.settings.alien_horizontal_speed_factor = (
+                self.alien_horizontal_speed
+            )
+            self.game.settings.alien_vertical_speed_factor = self.alien_vertical_speed
+            self.game.settings.alien_bullet_speed_factor = self.alien_bullet_speed
 
-        for _ in range(self.game.stats.level - self.level):
-            self.game.settings.alien_horizontal_speed_factor *= (
-                self.game.settings.speedup_scale
-            )
-            self.game.settings.alien_bullet_speed_factor *= (
-                self.game.settings.speedup_scale
-            )
+            for _ in range(self.game.stats.level - self.level):
+                self.game.settings.alien_horizontal_speed_factor *= (
+                    self.game.settings.speedup_scale
+                )
+                self.game.settings.alien_bullet_speed_factor *= (
+                    self.game.settings.speedup_scale
+                )

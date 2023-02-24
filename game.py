@@ -8,6 +8,7 @@ from ship import Ship
 from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
+from sound_mixer import SoundMixer
 
 import game_functions as gf
 
@@ -48,12 +49,15 @@ class Game:
 
         self.clock = pygame.time.Clock()
 
+        self.sounds = SoundMixer()
+
         self.run_game()
 
     def run_game(self):
         """Start of the main loop of the game"""
         pygame.display.set_caption("Alien Invasion")
         gf.create_fleet(self)
+        self.sounds.play_sound("menu_start", -1)
 
         while True:
             gf.check_events(self)
@@ -61,6 +65,7 @@ class Game:
             if self.stats.game_not_paused:
                 if self.stats.game_active:
                     self.background_rect.centerx = self.ship.update()
+                    gf.check_ship_movement(self)
                     gf.update_bullets(self)
                     gf.update_aliens(self)
                     gf.update_bonuses(self)
