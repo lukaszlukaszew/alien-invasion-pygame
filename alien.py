@@ -1,6 +1,6 @@
 """Module containing all aliens features and behaviours"""
 
-from random import randint, randrange
+from random import randint
 
 from pygame.sprite import Sprite
 
@@ -8,79 +8,30 @@ from animations import Animation
 from bullet import AlienBullet, AlienBossBeam
 
 
-class Alien(Sprite, Animation):
+class Alien(Animation, Sprite):
     """Super class for all alien types"""
 
     animations = {}
+    animation_images = {}
+    multiplier = 1
 
     def __init__(self, game):
-        """Initialization of basic instance attributes"""
-        super().__init__()
+        super().__init__("main")
         self.game = game
-        self.multiplier = 1
-        self.frames = 1
-        self.frame = 1
+        self.screen = game.screen
+        self.animation = "main"
+        self.frame = randint(
+            0, type(self).animations[self.animation] * self.multiplier - 1
+        )
 
     def check_edges(self):
         """Returns true if alien is at the edge of the screen"""
-        screen_rect = self.game.screen.get_rect()
-        if self.rect.right >= screen_rect.right:
-            return True
-        if self.rect.left <= 0:
+        if self.rect.right >= self.game.settings.screen_width or self.rect.left <= 0:
             return True
         return False
 
-    def blitme(self):
-        """Show alien in its current position"""
-        self.game.screen.blit(self.image, self.rect)
-
-    def prepare_images(self):
-        """Prepare all needed images for aliens"""
-
-        if not Alien.animations.get(type(self).__name__):
-            self.load_images(
-                str(self), type(self).__name__, self.frames, Alien.animations
-            )
-
-        self.frame = randint(
-            0, len(Alien.animations[type(self).__name__]) * self.multiplier - 1
-        )
-
-        self.image = Alien.animations[type(self).__name__][
-            self.frame // self.multiplier
-        ]
-
-        self.rect = self.image.get_rect()
-        self.x = float(self.rect.x)
-
-        self.place_alien_on_screen()
-
-    def place_alien_on_screen(self):
-        """Select starting position for image"""
-        self.rect.x = self.rect.width
-        self.rect.y = self.rect.height
-
-    def __str__(self):
-        return "alien"
-
-    def update(self):
-        """Animate and move alien to the left or to the right"""
-        self.frame = int(
-            (self.frame + 1)
-            % len(Alien.animations[type(self).__name__] * self.multiplier)
-        )
-        self.image = Alien.animations[type(self).__name__][
-            self.frame // self.multiplier
-        ]
-
-        self.x += (
-            self.game.settings.alien_horizontal_speed_factor
-            * self.game.settings.fleet_direction
-        )
-        self.rect.x = self.x
-
     def shoot(self):
-        """Attack ship"""
+        """Attack ship - create round bullet moving downwards"""
         if randint(0, 1000) > self.game.settings.alien_shooting_range:
             self.game.alien_bullets.add(
                 AlienBullet(
@@ -94,50 +45,54 @@ class Alien(Sprite, Animation):
 
 
 class AlienUFO(Alien):
-    """Class representing UFO-type of alien and its functionalities"""
+    """Class representing UFO-shaped alien and its functionalities"""
+
+    animations = {"main": 9}
+    animation_images = {}
+    multiplier = 12
 
     def __init__(self, game):
-        """Initialize attributes specific to AlienUFO object"""
         super().__init__(game)
-        self.multiplier = 12
-        self.frames = 9
+        self.pos_x = 0
 
-        self.prepare_images()
+    def update(self):
+        """Prepare next frame of the animation for AlienUFO object and adjust its position"""
+        self.next_frame()
+
+        self.pos_x += (
+            self.game.settings.alien_horizontal_speed_factor
+            * self.game.settings.fleet_direction
+        )
+        self.rect.x = self.pos_x
 
 
 class AlienTentacle(Alien):
     """Class representing alien with tentacles and its functionalities"""
 
-    def __init__(self, game):
-        """Initialize attributes specific to AlienTentacle object"""
-        super().__init__(game)
-        self.multiplier = 18
-        self.frames = 6
+    animations = {"main": 6}
+    animation_images = {}
+    multiplier = 18
 
-        self.prepare_images()
+    def __init__(self, game):
+        super().__init__(game)
+        self.pos_x = 0
 
     def update(self):
-        """Animate and move alien to the left or to the right"""
-        self.frame = int(
-            (self.frame + 1)
-            % len(Alien.animations[type(self).__name__] * self.multiplier)
-        )
-        self.image = Alien.animations[type(self).__name__][
-            self.frame // self.multiplier
-        ]
+        """Prepare next frame of the animation for AlienTentacle object and adjust its position"""
+        self.next_frame()
 
-        self.x += (
+        self.pos_x += (
             self.game.settings.alien_horizontal_speed_factor
             * self.game.settings.fleet_direction
         )
-        self.rect.x = self.x
+        self.rect.x = self.pos_x
 
-        screen_rect = self.game.screen.get_rect()
-
-        if self.rect.centerx >= screen_rect.centerx:
-            self.rect.y -= (
-                self.game.settings.fleet_direction
-                * self.game.settings.alien_vertical_speed_factor
+        if self.rect.centerx >= self.game.settings.screen_width // 2:
+            self.rect.y = max(
+                self.rect.y
+                - self.game.settings.fleet_direction
+                * self.game.settings.alien_vertical_speed_factor,
+                0,
             )
         else:
             self.rect.y += (
@@ -146,26 +101,38 @@ class AlienTentacle(Alien):
             )
 
 
+class AlienTeleport(Alien):
+    """Class representing teleporting alien and it's functionalities"""
+
+    animations = {"main": 24}
+    animation_images = {}
+    multiplier = 8
+
+    def update(self):
+        """Animate and move alien pseudorandonly"""
+        self.next_frame()
+
+        if not self.frame:
+            self.rect.x = randint(0, self.game.settings.screen_width - self.rect.width)
+            self.rect.y = randint(
+                0, self.game.settings.screen_height - 2 * self.rect.height
+            )
+
+        if 7 <= self.frame // self.multiplier <= 11:
+            self.shoot()
+
+
 class AlienShoot(Alien):
     """Class representing shooting alien and its functionalities"""
 
-    def __init__(self, game):
-        """Initialize attributes specific to AlienShoot object"""
-        super().__init__(game)
-        self.multiplier = 16
-        self.frames = 4
-
-        self.prepare_images()
+    animations = {"main": 4}
+    animation_images = {}
+    multiplier = 16
 
     def update(self):
-        """Animate and move alien pseudorandomly"""
-        self.frame = int(
-            (self.frame + 1)
-            % len(Alien.animations[type(self).__name__] * self.multiplier)
-        )
-        self.image = Alien.animations[type(self).__name__][
-            self.frame // self.multiplier
-        ]
+        """Prepare next frame of the animation for AlienShoot object, its position and shoot"""
+        self.next_frame()
+
         self.rect.y = max(
             min(
                 self.rect.y
@@ -184,93 +151,38 @@ class AlienShoot(Alien):
             ),
             0,
         )
-        self.shoot()
 
-
-class AlienTeleport(Alien):
-    """Class representing teleporting alien and it's functionalities"""
-
-    def __init__(self, game):
-        """Initialize attributes specific to AlienTentacle object"""
-        super().__init__(game)
-        self.multiplier = 8
-        self.frames = 24
-
-        self.prepare_images()
-
-    def update(self):
-        """Animate and move alien pseudorandonly"""
-        self.frame = int(
-            (self.frame + 1)
-            % len(Alien.animations[type(self).__name__] * self.multiplier)
-        )
-        self.image = Alien.animations[type(self).__name__][
-            self.frame // self.multiplier
-        ]
-
-        if not self.frame:
-            self.rect.x = randint(0, self.game.settings.screen_width - self.rect.width)
-            self.rect.y = randint(
-                0, self.game.settings.screen_height - 2 * self.rect.height
-            )
-
-        if 7 <= self.frame // self.multiplier <= 11:
+        if self.frame // self.multiplier >= 3:
             self.shoot()
 
 
-class AlienBoss1(Alien):
-    """Class representing first boss in the game"""
+class AlienBoss(Alien):
+    """Class representing main boss of the game"""
 
-    def __init__(self, game):
-        """Initialize attributes specific to AlienBoss1 object"""
-        super().__init__(game)
-        self.multiplier = 8
-        self.boss_animations = {
-            "main": 6,
-            "left_up": 1,
-            "left_down": 1,
-            "right_up": 1,
-            "right_down": 1,
-            "shoot": 16,
-        }
-
-        for animation, frames in self.boss_animations.items():
-            self.load_images(
-                self.__str__(),
-                type(self).__name__ + animation,
-                frames,
-                Alien.animations,
-            )
-
-        self.move = "main"
-        self.image = Alien.animations[type(self).__name__ + self.move][self.frame]
-
-        self.rect = self.image.get_rect()
-        self.screen_rect = self.game.screen.get_rect()
-
-        self.rect.centerx = self.screen_rect.centerx
-        self.rect.centery = self.screen_rect.centery
+    animations = {
+        "main": 6,
+        "left_up": 1,
+        "left_down": 1,
+        "right_up": 1,
+        "right_down": 1,
+        "shoot": 16,
+    }
+    animation_images = {}
+    multiplier = 8
 
     def update(self):
-        """Animate and move alien pseudorandonly"""
+        """Prepare next frame of the animation for AlienBoss object and adjust its position"""
+        if not self.frame:
+            self.choose_animation()
 
-        if self.frame == 0:
-            self.choose_move()
+        getattr(self, self.animation)()
 
-        getattr(self, self.move)()
+        self.next_frame()
 
-        self.frame = int(
-            (self.frame + 1)
-            % len(Alien.animations[type(self).__name__ + self.move] * self.multiplier)
-        )
-        self.image = Alien.animations[type(self).__name__ + self.move][
-            self.frame // self.multiplier
-        ]
-
-    def choose_move(self):
+    def choose_animation(self):
         """Select next move to execute"""
-        self.move = list(self.boss_animations.keys())[
-            randrange(0, len(self.boss_animations))
+        self.animation = list(type(self).animations.keys())[
+            randint(0, len(type(self).animations) - 1)
         ]
 
     def main(self):
@@ -292,7 +204,7 @@ class AlienBoss1(Alien):
         current_move = randint(
             0,
             min(
-                self.screen_rect.height // 4 * 3 - self.rect.centery,
+                self.game.settings.screen_width // 4 * 3 - self.rect.centery,
                 self.game.settings.alien_boss_area,
             ),
         )
@@ -304,7 +216,7 @@ class AlienBoss1(Alien):
         current_move = randint(
             0,
             min(
-                self.screen_rect.width - self.rect.centerx,
+                self.game.settings.screen_width - self.rect.centerx,
                 self.rect.centery,
                 self.game.settings.alien_boss_area,
             ),
@@ -317,8 +229,8 @@ class AlienBoss1(Alien):
         current_move = randint(
             0,
             min(
-                self.screen_rect.width - self.rect.centerx,
-                self.screen_rect.height // 4 * 3 - self.rect.centery,
+                self.game.settings.screen_width - self.rect.centerx,
+                self.game.settings.screen_height // 4 * 3 - self.rect.centery,
                 self.game.settings.alien_boss_area,
             ),
         )

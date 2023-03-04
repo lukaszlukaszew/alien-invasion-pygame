@@ -9,13 +9,14 @@ from ship import Ship
 class Scoreboard:
     """Class dedicated to represent current player score"""
 
-    def __init__(self, settings, screen, stats):
+    def __init__(self, settings, screen, stats, game):
         """Create score attributes"""
 
         self.screen = screen
         self.screen_rect = screen.get_rect()
         self.settings = settings
         self.stats = stats
+        self.game = game
 
         # font
         self.text_full_health = (0, 255, 0)
@@ -102,14 +103,14 @@ class Scoreboard:
         self.ships = Group()
 
         for ship_number in range(self.stats.ships_left):
-            ship = Ship(self.settings, self.screen)
+            ship = Ship(self.game)
             ship.rect.x = 10 + ship_number * ship.rect.width
             ship.rect.y = 10
             self.ships.add(ship)
 
     def prep_boss_health(self):
         """Transform boss health amount into the on-screen image"""
-        color = ()
+
         if (
             self.settings.alien_boss_life
             > self.settings.starting_alien_boss_life // 3 * 2

@@ -40,7 +40,7 @@ class Settings:
             "AlienTentacle",
             "AlienTeleport",
             "AlienShoot",
-            "AlienBoss1",
+            "AlienBoss",
         )
 
         # game speed change
@@ -74,7 +74,7 @@ class Settings:
         self.current_alien = 0  # CHANGED
 
         # bonus settings
-        self.bonus_drop_rate = 9999
+        self.bonus_drop_rate = 1
 
     def increase_speed(self):
         """Change speed factors due to higher level"""

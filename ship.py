@@ -1,73 +1,57 @@
-"""Module containing ship features"""
+"""Module containing all the ship features"""
 
 from pygame.sprite import Sprite
 
 from animations import Animation
 
 
-class Ship(Sprite, Animation):
-    """Class representing player's ship and its functionalities"""
+class Ship(Animation, Sprite):
+    """Class representing player's ship and its movement functionalities"""
 
-    animations = {}
+    animations = {"main": 4, "move_left": 4, "move_right": 4}
+    animation_images = {}
+    multiplier = 10
+    starting_frame = 0
 
-    def __init__(self, settings, screen, x=None):
-        """Create ship object at the center & bottom of the screen"""
-        super().__init__()
-
-        self.screen = screen
-        self.settings = settings
-
-        for animation, frames in {"main": 4, "move_left": 4, "move_right": 4}.items():
-            self.load_images(self.__str__(), animation, frames, Ship.animations)
-
-        self.current_frame = 0
-        self.image = Ship.animations["main"][self.current_frame]
-
-        self.rect = self.image.get_rect()
-        self.screen_rect = screen.get_rect()
-
-        self.rect.centerx = self.screen_rect.centerx
-        self.rect.bottom = self.screen_rect.bottom
-
-        self.center = float(self.rect.centerx)
-
+    def __init__(self, game):
+        super().__init__("main")
+        self.game = game
+        self.screen = game.screen
+        self.animation = "main"
         self.moving_right = False
         self.moving_left = False
 
-        self.screen_x = x
+        self.rect.centerx = self.game.settings.screen_width // 2
+        self.rect.bottom = self.game.settings.screen_height
 
-    def __str__(self):
-        return "ship"
-
-    def blitme(self):
-        """Show ship on the screen in its current position"""
-        self.screen.blit(self.image, self.rect)
+        self.centerx = float(self.rect.centerx)
 
     def update(self):
-        """Update position of the ship"""
+        """Prepare next frame of the animation for Ship object and adjust its position"""
+        if self.moving_right == self.moving_left:
+            self.animation = "main"
+        elif self.moving_right:
+            self.animation = "move_right"
+            self.centerx = min(
+                self.centerx + self.game.settings.ship_speed_factor,
+                self.game.settings.screen_width - self.rect.width // 2,
+            )
+            self.game.background_rect.centerx -= (
+                self.game.settings.ship_speed_factor // 2
+            )
+        elif self.moving_left:
+            self.animation = "move_left"
+            self.centerx = max(
+                self.rect.width // 2,
+                self.centerx - self.game.settings.ship_speed_factor,
+            )
+            self.game.background_rect.centerx += (
+                self.game.settings.ship_speed_factor // 2
+            )
 
-        self.current_frame += 1
-
-        if self.current_frame >= len(Ship.animations["main"]) * 10:
-            self.current_frame = 0
-
-        if not (self.moving_right or self.moving_left):
-            self.image = Ship.animations["main"][self.current_frame // 10]
-        else:
-            if self.moving_right and self.rect.right < self.screen_rect.right:
-                self.center += self.settings.ship_speed_factor
-                self.image = Ship.animations["move_right"][self.current_frame // 10]
-                self.screen_x -= self.settings.ship_speed_factor // 2
-
-            if self.moving_left and self.rect.left > 0:
-                self.center -= self.settings.ship_speed_factor
-                self.image = Ship.animations["move_left"][self.current_frame // 10]
-                self.screen_x += self.settings.ship_speed_factor // 2
-
-        self.rect.centerx = self.center
-
-        return self.screen_x
+        self.next_frame()
+        self.rect.centerx = self.centerx
 
     def center_ship(self):
-        """Move ship to the center of the screen"""
-        self.center = self.screen_rect.centerx
+        """Transfer ship to the center of the screen"""
+        self.centerx = self.game.settings.screen_width // 2

@@ -1,42 +1,28 @@
-"""Module containing explosion effect"""
+"""Module containing behaviour of the explosion effect"""
 
-import pygame
 from pygame.sprite import Sprite
 
+from animations import Animation
 
-class Boom(Sprite):
+
+class Boom(Animation, Sprite):
     """Basic class of explosion effect"""
 
-    animation = []
-    frames = 11
+    animations = {"main": 11}
+    animation_images = {}
+    multiplier = 2
+    starting_frame = 0
 
-    for i in range(frames):
-        animation.append(pygame.image.load(f"images/explosion/sprite_{i}.png"))
+    def __init__(self, game, pos_x, pos_y):
+        super().__init__("main")
+        self.screen = game.screen
+        self.animation = "main"
 
-    def __init__(self, screen, x, y):
-        """Initialization of basic instance attributes"""
-        super().__init__()
-        self.screen = screen
-        self.frame = 1
-        self.multiplier = 2
-        self.prepare_images(x, y)
+        self.rect.centerx = pos_x
+        self.rect.centery = pos_y
 
-    def blitme(self):
-        """Show explosion in its current position"""
-        self.screen.blit(self.image, self.rect)
-
-    def prepare_images(self, x, y):
-        """Prepare all needed images for explosion"""
-        self.image = Boom.animation[self.frame // self.multiplier]
-        self.rect = self.image.get_rect()
-        self.place_explosion_on_screen(x, y)
-
-    def place_explosion_on_screen(self, x, y):
-        """Select starting position for image"""
-        self.rect.centerx = x
-        self.rect.centery = y
+        game.sounds.play_sound(type(self).__name__)
 
     def update(self):
-        """Animate and move alien to the left or to the right"""
-        self.frame = int((self.frame + 1) % (self.frames * self.multiplier))
-        self.image = Boom.animation[self.frame // self.multiplier]
+        """Prepare next frame of animation for explosion effect"""
+        self.next_frame()

@@ -154,37 +154,32 @@ def get_number_aliens_x(settings, alien_width):
 
 
 def create_alien(game, alien_number, row_number, number_aliens_x):
-    """Create alien and add it to the fleet"""
+    """Create proper kind of alien and add it to the fleet"""
     alien = globals()[game.settings.alien_types[game.settings.current_alien]](game)
 
     if game.settings.current_alien == 0:  # AlienUFO
+        alien.pos_x = alien.rect.width + 2 * alien.rect.width * alien_number
+        alien.rect.x = alien.pos_x
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
-        alien_width = alien.rect.width
-        alien.x = alien_width + 2 * alien_width * alien_number
-        alien.rect.x = alien.x
     elif game.settings.current_alien == 1:  # AlienTentacle
-        y = (
-            2 * alien.rect.height
-            - alien.rect.height
-            * abs(alien_number - number_aliens_x // 2)
+        alien.pos_x = (
+            alien.rect.width
+            + (game.settings.screen_width // number_aliens_x) * alien_number
+        )
+        alien.rect.x = alien.pos_x
+        alien.rect.y = (
+            alien.rect.height
+            * (2 - abs(alien_number - number_aliens_x // 2))
             // number_aliens_x
+            + alien.rect.height * row_number
         )
-
-        alien.rect.y = y + alien.rect.height * row_number
-        alien_width = alien.rect.width
-        alien.x = (
-            alien_width + (game.settings.screen_width // number_aliens_x) * alien_number
-        )
-        alien.rect.x = alien.x
     elif game.settings.current_alien == 2:  # AlienTeleport
         alien.rect.x = randint(0, game.settings.screen_width - alien.rect.width)
         alien.rect.y = randint(0, game.settings.screen_height - 3 * alien.rect.height)
     elif game.settings.current_alien == 3:  # AlienShoot
         alien.rect.y = alien.rect.height + 2 * alien.rect.height * row_number
-        alien_width = alien.rect.width
-        alien.x = alien_width + 2 * alien_width * alien_number
-        alien.rect.x = alien.x
-    elif game.settings.current_alien == 4:  # AlienBoss1
+        alien.rect.x = alien.rect.width + 2 * alien.rect.width * alien_number
+    elif game.settings.current_alien == 4:  # AlienBoss
         alien.rect.centerx = game.settings.screen_width // 2
         alien.rect.centery = game.settings.screen_height // 2
 
@@ -381,7 +376,7 @@ def reset_screen(game):
 
 def drop_bonus(game, x, y):
     """Select and create bonus objcect which will be dropped by killed alien"""
-    choosen_bonus = randint(0, 5)
+    choosen_bonus = randint(2, 2)
 
     if choosen_bonus == 0:  # extra ship
         bonus = Bonus00(game, x, y, "bonus_add")
@@ -424,11 +419,12 @@ def update_bonuses(game):
     bonus_check_bottom(game)
     game.bonuses.update()
 
-    for bonus in game.active_bonuses.copy().keys():
-        game.active_bonuses[bonus] += 1
-        if game.active_bonuses[bonus] > game.settings.bonus_active_time:
-            bonus.reverse_effect()
-            game.active_bonuses.pop(bonus)
+    if game.stats.game_not_paused:
+        for bonus in game.active_bonuses.copy().keys():
+            game.active_bonuses[bonus] += 1
+            if game.active_bonuses[bonus] > game.settings.bonus_active_time:
+                bonus.reverse_effect()
+                game.active_bonuses.pop(bonus)
 
 
 def update_explosions(game):
@@ -439,8 +435,7 @@ def update_explosions(game):
 
 
 def explode(game, x, y):
-    game.explosions.add(Boom(game.screen, x, y))
-    game.sounds.play_sound("explosion")
+    game.explosions.add(Boom(game, x, y))
 
 
 def check_ship_movement(game):
