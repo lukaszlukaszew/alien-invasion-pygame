@@ -35,8 +35,7 @@ class Alien(Animation, Sprite):
         if randint(0, 1000) > self.game.settings.alien_shooting_range:
             self.game.alien_bullets.add(
                 AlienBullet(
-                    self.game.settings,
-                    self.game.screen,
+                    self.game,
                     self.rect.centerx,
                     self.rect.centery,
                 )
@@ -193,22 +192,25 @@ class AlienBoss(Alien):
         current_move = randint(
             0,
             min(
-                self.rect.centerx, self.rect.centery, self.game.settings.alien_boss_area
+                self.rect.centerx,
+                self.rect.centery,
+                self.game.settings.alien_boss_single_move_range,
             ),
         )
-        self.rect.centerx = max(0, self.rect.centerx - current_move)
-        self.rect.centery = max(0, self.rect.centery - current_move)
+        self.rect.centerx -= current_move
+        self.rect.centery -= current_move
 
     def left_down(self):
         """Calculate and move alien towards left lower corner of the screen"""
         current_move = randint(
             0,
             min(
-                self.game.settings.screen_width // 4 * 3 - self.rect.centery,
-                self.game.settings.alien_boss_area,
+                self.rect.centerx,
+                self.game.settings.screen_height // 4 * 3 - self.rect.centery,
+                self.game.settings.alien_boss_single_move_range,
             ),
         )
-        self.rect.centerx = max(0, self.rect.centerx - current_move)
+        self.rect.centerx -= current_move
         self.rect.centery += current_move
 
     def right_up(self):
@@ -218,11 +220,11 @@ class AlienBoss(Alien):
             min(
                 self.game.settings.screen_width - self.rect.centerx,
                 self.rect.centery,
-                self.game.settings.alien_boss_area,
+                self.game.settings.alien_boss_single_move_range,
             ),
         )
-        self.rect.centerx = max(0, self.rect.centerx + current_move)
-        self.rect.centery = max(0, self.rect.centery - current_move)
+        self.rect.centerx += current_move
+        self.rect.centery -= current_move
 
     def right_down(self):
         """Calculate and move alien towards right lower corner of the screen"""
@@ -231,19 +233,18 @@ class AlienBoss(Alien):
             min(
                 self.game.settings.screen_width - self.rect.centerx,
                 self.game.settings.screen_height // 4 * 3 - self.rect.centery,
-                self.game.settings.alien_boss_area,
+                self.game.settings.alien_boss_single_move_range,
             ),
         )
-        self.rect.centerx = self.rect.centerx + current_move
-        self.rect.centery = self.rect.centery + current_move
+        self.rect.centerx += current_move
+        self.rect.centery += current_move
 
     def shoot(self):
         """Attack ship"""
         if 5 <= self.frame // self.multiplier <= 9:
             self.game.alien_bullets.add(
                 AlienBossBeam(
-                    self.game.settings,
-                    self.game.screen,
+                    self.game,
                     self.rect.centerx,
                     self.rect.centery,
                     self.frame // self.multiplier,

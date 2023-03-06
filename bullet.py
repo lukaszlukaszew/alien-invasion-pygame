@@ -7,90 +7,77 @@ from pygame.sprite import Sprite
 class Bullet(Sprite):
     """Class representing basic bullets"""
 
-    def __init__(self, settings, screen):
+    direction = None
+
+    def __init__(self, game, x, y):
         super().__init__()
-        self.screen = screen
         self.rect = None
-        self.color = settings.bullet_color
-        self.speed_factor = settings.bullet_speed_factor
-        self.direction = 0
-        self.y = 0
+        self.pos_y = None
+        self.screen = game.screen
+        self.color = game.settings.bullet_color
+        self.screen_height = game.settings.screen_height
+
+        if type(self).__name__ == "ShipBullet":
+            self.speed_factor = game.settings.bullet_speed_factor
+        elif type(self).__name__ == "AlienBullet":
+            self.speed_factor = game.settings.alien_bullet_speed_factor
+        else:
+            self.speed_factor = 0
+
+        if type(self).__name__ != "AlienBossBeam":
+            self.rect = pygame.Rect(
+                x,
+                y,
+                game.settings.bullet_width,
+                game.settings.bullet_height,
+            )
+        else:
+            self.rect = pygame.Rect(
+                x - 15,
+                y,
+                30,
+                self.screen_height,
+            )
+
+        self.pos_y = float(self.rect.y)
 
     def update(self):
         """Move Bullet object"""
-        self.y += self.speed_factor * self.direction
-        self.rect.y = self.y
+        self.pos_y += self.speed_factor * type(self).direction
+        self.rect.y = self.pos_y
 
     def draw_bullet(self):
         """Make bullet visible on the screen"""
-        pygame.draw.rect(self.screen, self.color, self.rect)
+        if type(self).__name__ == "ShipBullet":
+            pygame.draw.rect(self.screen, self.color, self.rect)
+        elif type(self).__name__ == "AlienBullet":
+            pygame.draw.circle(
+                self.screen, self.color, self.rect.center, self.rect.height // 3
+            )
 
 
-class ShipBullet(Bullet, Sprite):
+class ShipBullet(Bullet):
     """Class representing basic ship bullters"""
 
-    def __init__(self, settings, screen, ship):
-        """Create ShipBullet object at the top of the ship"""
-        super().__init__(settings, screen)
-        self.ship = ship
-        self.direction = -1
-
-        self.rect = pygame.Rect(
-            ship.rect.centerx,
-            ship.rect.top,
-            settings.bullet_width,
-            settings.bullet_height,
-        )
-
-        self.y = float(self.rect.y)
+    direction = -1
 
 
-class AlienBullet(Bullet, Sprite):
+class AlienBullet(Bullet):
     """Class representing basic alien bullets"""
 
-    def __init__(self, settings, screen, x, y):
-        """Create AlienBullet object at the center of the alien"""
-        super().__init__(settings, screen)
-        self.direction = 1
-        self.speed_factor = settings.alien_bullet_speed_factor
-
-        self.rect = pygame.Rect(
-            x,
-            y,
-            settings.alien_bullet_width * 3,
-            settings.alien_bullet_width * 3,
-        )
-
-        self.y = float(self.rect.y)
-
-    def draw_bullet(self):
-        """Make bullet visible on the screen"""
-        pygame.draw.circle(
-            self.screen, self.color, self.rect.center, self.rect.width // 2
-        )
+    direction = 1
 
 
-class AlienBossBeam(Bullet, Sprite):
+class AlienBossBeam(Bullet):
     """Class representing boss beam"""
 
-    def __init__(self, settings, screen, x, y, frame):
-        """Create AlienBossBullet object at the center of the Boss rect."""
-        super().__init__(settings, screen)
-        self.color_1 = settings.beam_color_1
-        self.color_2 = settings.beam_color_2
+    direction = 0
+
+    def __init__(self, game, x, y, frame):
+        super().__init__(game, x, y)
+        self.color_1 = game.settings.beam_color_1
+        self.color_2 = game.settings.beam_color_2
         self.frame = frame
-        self.screen_height = settings.screen_height
-        self.y = y
-
-        self.rect = pygame.Rect(
-            x - 15,
-            self.y,
-            30,
-            self.screen_height,
-        )
-
-    def update(self):
-        """Override super class method to avoid movement of the beam"""
 
     def draw_bullet(self):
         """Make beam visible on the screen"""

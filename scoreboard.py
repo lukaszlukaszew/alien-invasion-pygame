@@ -10,13 +10,12 @@ class Scoreboard:
     """Class dedicated to represent current player score"""
 
     def __init__(self, settings, screen, stats, game):
-        """Create score attributes"""
-
         self.screen = screen
         self.screen_rect = screen.get_rect()
         self.settings = settings
         self.stats = stats
         self.game = game
+        self.ships = None
 
         # font
         self.text_full_health = (0, 255, 0)
@@ -24,226 +23,150 @@ class Scoreboard:
         self.text_low_health = (255, 0, 0)
         self.font = pygame.font.SysFont(None, 48)
 
+        self.standard_screen = ["score", "high_score", "level"]
+        self.end_screen = [
+            "title",
+            "fired_t",
+            "fired_v",
+            "hit_t",
+            "hit_v",
+            "acc_t",
+            "acc_v",
+            "ships_t",
+            "ships_v",
+            "kill_t",
+            "kill_v",
+            "bonus_t",
+            "bonus_v",
+            "tot_t",
+            "tot_v",
+            "level_t",
+            "level_v",
+        ]
+
+        self.rects = {"screen": self.screen.get_rect()}
+        self.images = {}
+
+        self.rect_pos = {
+            "score": ("right", "screen", "right", -10, "top", "screen", "top", 20),
+            "high_score": ("centerx", "screen", "centerx", 0, "top", "score", "top", 0),
+            "level": ("right", "screen", "right", -10, "top", "score", "bottom", 10),
+            "boss_health": ("left", "screen", "left", 10, "top", "score", "bottom", 10),
+            "title": ("centerx", "screen", "centerx", 0, "top", "score", "top", 20),
+            "fired_t": ("left", "screen", "left", 20, "top", "title", "bottom", 20),
+            "fired_v": ("right", "screen", "right", -20, "top", "title", "bottom", 20),
+            "hit_t": ("left", "screen", "left", 20, "top", "fired_t", "bottom", 20),
+            "hit_v": ("right", "screen", "right", -20, "top", "fired_t", "bottom", 20),
+            "acc_t": ("left", "screen", "left", 20, "top", "hit_t", "bottom", 20),
+            "acc_v": ("right", "screen", "right", -20, "top", "hit_t", "bottom", 20),
+            "ships_t": ("left", "screen", "left", 20, "top", "acc_t", "bottom", 50),
+            "ships_v": ("right", "screen", "right", -20, "top", "acc_t", "bottom", 50),
+            "kill_t": ("left", "screen", "left", 20, "top", "ships_t", "bottom", 20),
+            "kill_v": ("right", "screen", "right", -20, "top", "ships_t", "bottom", 20),
+            "bonus_t": ("left", "screen", "left", 20, "top", "kill_t", "bottom", 20),
+            "bonus_v": ("right", "screen", "right", -20, "top", "kill_t", "bottom", 20),
+            "tot_t": ("left", "screen", "left", 20, "top", "bonus_t", "bottom", 50),
+            "tot_v": ("right", "screen", "right", -20, "top", "bonus_t", "bottom", 50),
+            "level_t": ("left", "screen", "left", 20, "top", "tot_t", "bottom", 20),
+            "level_v": ("right", "screen", "right", -20, "top", "tot_t", "bottom", 20),
+        }
+
         self.prep_score()
         self.prep_high_score()
         self.prep_level()
         self.prep_ships()
         self.prep_boss_health()
 
+    def prepare_rects(self, key):
+        """Prepare rect object in correct position based on an image"""
+        self.rects[key] = self.images[key].get_rect()
+
+        for i in range(2):
+            setattr(
+                self.rects[key],
+                self.rect_pos[key][4 * i],
+                getattr(
+                    self.rects[self.rect_pos[key][4 * i + 1]],
+                    self.rect_pos[key][4 * i + 2],
+                )
+                + self.rect_pos[key][4 * i + 3],
+            )
+
     def show_score(self):
         """Show additional information on the screen"""
         if (
-            self.stats.level <= self.settings.alien_changes[-1]
-            and self.stats.game_active
+                self.stats.level <= self.settings.alien_changes[-1]
+                and self.stats.game_active
         ):
-            self.screen.blit(self.score_image, self.score_rect)
-            self.screen.blit(self.high_score_image, self.high_score_rect)
-            self.screen.blit(self.level_image, self.level_rect)
+            self.standard_screen = ["score", "high_score", "level"]
             if self.stats.level == self.settings.alien_changes[-1]:
-                self.screen.blit(self.boss_health_image, self.boss_health_rect)
+                self.standard_screen.append("boss_health")
+
+            for key in self.standard_screen:
+                self.screen.blit(self.images[key], self.rects[key])
 
             self.ships.draw(self.screen)
         else:
-            self.screen.blit(self.title_image, self.title_rect)
-            self.screen.blit(self.bullets_fired_txt_image, self.bullets_fired_txt_rect)
-            self.screen.blit(self.bullets_fired_image, self.bullets_fired_rect)
-            self.screen.blit(self.bullets_hit_txt_image, self.bullets_hit_txt_rect)
-            self.screen.blit(self.bullets_hit_image, self.bullets_hit_rect)
-            self.screen.blit(self.accuracy_txt_image, self.accuracy_txt_rect)
-            self.screen.blit(self.accuracy_image, self.accuracy_rect)
-            self.screen.blit(self.ships_left_txt_image, self.ships_left_txt_rect)
-            self.screen.blit(self.ships_left_image, self.ships_left_rect)
-            self.screen.blit(
-                self.aliens_defeated_txt_image, self.aliens_defeated_txt_rect
-            )
-            self.screen.blit(self.aliens_defeated_image, self.aliens_defeated_rect)
-            self.screen.blit(self.bonuses_used_txt_image, self.bonuses_used_txt_rect)
-            self.screen.blit(self.bonuses_used_image, self.bonuses_used_rect)
-            self.screen.blit(self.total_score_txt_image, self.total_score_txt_rect)
-            self.screen.blit(self.total_score_image, self.total_score_rect)
-            self.screen.blit(self.level_reached_txt_image, self.level_reached_txt_rect)
-            self.screen.blit(self.level_reached_image, self.level_reached_rect)
-
-    def prep_score(self):
-        """Transform score into the on-screen image"""
-        rounded_score = round(self.stats.score, -1)
-        score_str = f"{rounded_score:,}"
-
-        self.score_image = self.font.render(score_str, True, self.settings.text_color)
-        self.score_rect = self.score_image.get_rect()
-
-        self.score_rect.right = self.screen_rect.right - 10
-        self.score_rect.top = 20
-
-    def prep_high_score(self):
-        """Transform high-score into the on-screen image"""
-        rounded_high_score = round(self.stats.high_score, -1)
-        high_score_str = f"{rounded_high_score:,}"
-
-        self.high_score_image = self.font.render(
-            high_score_str, True, self.settings.text_color
-        )
-        self.high_score_rect = self.high_score_image.get_rect()
-
-        self.high_score_rect.centerx = self.screen_rect.centerx
-        self.high_score_rect.top = self.score_rect.top
-
-    def prep_level(self):
-        """Transform level info into the on-screen image"""
-        self.level_image = self.font.render(
-            str(self.stats.level), True, self.settings.text_color
-        )
-        self.level_rect = self.level_image.get_rect()
-
-        self.level_rect.right = self.screen_rect.right - 10
-        self.level_rect.top = self.score_rect.bottom + 10
-
-    def prep_ships(self):
-        """Prepare images representing remaining ships"""
-        self.ships = Group()
-
-        for ship_number in range(self.stats.ships_left):
-            ship = Ship(self.game)
-            ship.rect.x = 10 + ship_number * ship.rect.width
-            ship.rect.y = 10
-            self.ships.add(ship)
-
-    def prep_boss_health(self):
-        """Transform boss health amount into the on-screen image"""
-
-        if (
-            self.settings.alien_boss_life
-            > self.settings.starting_alien_boss_life // 3 * 2
-        ):
-            color = self.text_full_health
-        elif (
-            self.settings.alien_boss_life > self.settings.starting_alien_boss_life // 3
-        ):
-            color = self.text_medium_health
-        else:
-            color = self.text_low_health
-
-        self.boss_health_image = self.font.render(
-            "BOSS: " + str(self.settings.alien_boss_life), True, color
-        )
-        self.boss_health_rect = self.boss_health_image.get_rect()
-
-        self.boss_health_rect.left = 10
-        self.boss_health_rect.top = self.score_rect.bottom + 10
+            for key in self.end_screen:
+                self.screen.blit(self.images[key], self.rects[key])
 
     def prep_end_screen(self):
         """Transform all end screen info into the on-screen images"""
         # victory or game over
-
         if self.stats.game_won:
-            self.title_image = self.font.render(
+            self.images["title"] = self.font.render(
                 "VICTORY!", True, self.settings.text_color
             )
         else:
-            self.title_image = self.font.render(
+            self.images["title"] = self.font.render(
                 "GAME OVER", True, self.settings.text_color
             )
 
-        self.title_rect = self.title_image.get_rect()
-
-        self.title_rect.centerx = self.screen_rect.centerx
-        self.title_rect.top = self.score_rect.top + 20
-
-        # bullets fired - txt
-        self.bullets_fired_txt_image = self.font.render(
+        # bullets fired
+        self.images["fired_t"] = self.font.render(
             "Bullets fired", True, self.settings.text_color
         )
-        self.bullets_fired_txt_rect = self.bullets_fired_txt_image.get_rect()
-
-        self.bullets_fired_txt_rect.left = self.screen_rect.left + 20
-        self.bullets_fired_txt_rect.top = self.title_rect.bottom + 20
-
-        # bullets fired - value
-
-        self.bullets_fired_image = self.font.render(
+        self.images["fired_v"] = self.font.render(
             str(self.stats.bullets_fired), True, self.settings.text_color
         )
-        self.bullets_fired_rect = self.bullets_fired_image.get_rect()
 
-        self.bullets_fired_rect.right = self.screen_rect.right - 20
-        self.bullets_fired_rect.top = self.title_rect.bottom + 20
-
-        # bullets hit - txt
-        self.bullets_hit_txt_image = self.font.render(
+        # bullets hit
+        self.images["hit_t"] = self.font.render(
             "Bullets hit", True, self.settings.text_color
         )
-        self.bullets_hit_txt_rect = self.bullets_hit_txt_image.get_rect()
-
-        self.bullets_hit_txt_rect.left = self.screen_rect.left + 20
-        self.bullets_hit_txt_rect.top = self.bullets_fired_rect.bottom + 20
-
-        # bullets hit - value
-
-        self.bullets_hit_image = self.font.render(
+        self.images["hit_v"] = self.font.render(
             str(sum(self.stats.hits.values())), True, self.settings.text_color
         )
-        self.bullets_hit_rect = self.bullets_hit_image.get_rect()
 
-        self.bullets_hit_rect.right = self.screen_rect.right - 20
-        self.bullets_hit_rect.top = self.bullets_fired_rect.bottom + 20
-
-        # accuracy - txt
-        self.accuracy_txt_image = self.font.render(
+        # accuracy
+        self.images["acc_t"] = self.font.render(
             "Accuracy", True, self.settings.text_color
         )
-        self.accuracy_txt_rect = self.accuracy_txt_image.get_rect()
 
-        self.accuracy_txt_rect.left = self.screen_rect.left + 20
-        self.accuracy_txt_rect.top = self.bullets_hit_rect.bottom + 20
-
-        # accuracy - value
         try:
-            self.accuracy_image = self.font.render(
+            self.images["acc_v"] = self.font.render(
                 f"{sum(self.stats.hits.values()) * 100 / self.stats.bullets_fired:.2f} %",
                 True,
                 self.settings.text_color,
             )
         except ZeroDivisionError:
-            self.accuracy_image = self.font.render(
+            self.images["acc_v"] = self.font.render(
                 "---", True, self.settings.text_color
             )
 
-        self.accuracy_rect = self.accuracy_image.get_rect()
-
-        self.accuracy_rect.right = self.screen_rect.right - 20
-        self.accuracy_rect.top = self.bullets_hit_rect.bottom + 20
-
-        # ships left - txt
-        self.ships_left_txt_image = self.font.render(
+        # ships left
+        self.images["ships_t"] = self.font.render(
             "Ships left", True, self.settings.text_color
         )
-        self.ships_left_txt_rect = self.ships_left_txt_image.get_rect()
-
-        self.ships_left_txt_rect.left = self.screen_rect.left + 20
-        self.ships_left_txt_rect.top = self.accuracy_rect.bottom + 50
-
-        # ships left - value
-
-        self.ships_left_image = self.font.render(
+        self.images["ships_v"] = self.font.render(
             str(self.stats.ships_left), True, self.settings.text_color
         )
-        self.ships_left_rect = self.ships_left_image.get_rect()
 
-        self.ships_left_rect.right = self.screen_rect.right - 20
-        self.ships_left_rect.top = self.accuracy_rect.bottom + 50
-
-        # aliens defeated - txt
-        self.aliens_defeated_txt_image = self.font.render(
+        # aliens defeated
+        self.images["kill_t"] = self.font.render(
             "Aliens defeated", True, self.settings.text_color
         )
-        self.aliens_defeated_txt_rect = self.aliens_defeated_txt_image.get_rect()
-
-        self.aliens_defeated_txt_rect.left = self.screen_rect.left + 20
-        self.aliens_defeated_txt_rect.top = self.ships_left_rect.bottom + 20
-
-        # aliens defeated - value
-
-        self.aliens_defeated_image = self.font.render(
+        self.images["kill_v"] = self.font.render(
             str(
                 sum(self.stats.hits.values())
                 + int(
@@ -255,64 +178,85 @@ class Scoreboard:
             True,
             self.settings.text_color,
         )
-        self.aliens_defeated_rect = self.aliens_defeated_image.get_rect()
 
-        self.aliens_defeated_rect.right = self.screen_rect.right - 20
-        self.aliens_defeated_rect.top = self.ships_left_rect.bottom + 20
-
-        # bonuses used - txt
-        self.bonuses_used_txt_image = self.font.render(
+        # bonuses used
+        self.images["bonus_t"] = self.font.render(
             "Bonuses used", True, self.settings.text_color
         )
-        self.bonuses_used_txt_rect = self.bonuses_used_txt_image.get_rect()
-
-        self.bonuses_used_txt_rect.left = self.screen_rect.left + 20
-        self.bonuses_used_txt_rect.top = self.aliens_defeated_rect.bottom + 20
-
-        # bonuses used - value
-
-        self.bonuses_used_image = self.font.render(
+        self.images["bonus_v"] = self.font.render(
             str(self.stats.bonuses_used), True, self.settings.text_color
         )
-        self.bonuses_used_rect = self.bonuses_used_image.get_rect()
 
-        self.bonuses_used_rect.right = self.screen_rect.right - 20
-        self.bonuses_used_rect.top = self.aliens_defeated_rect.bottom + 20
-
-        # total score - txt
-        self.total_score_txt_image = self.font.render(
+        # total score
+        self.images["tot_t"] = self.font.render(
             "Total score", True, self.settings.text_color
         )
-        self.total_score_txt_rect = self.total_score_txt_image.get_rect()
-
-        self.total_score_txt_rect.left = self.screen_rect.left + 20
-        self.total_score_txt_rect.top = self.bonuses_used_rect.bottom + 50
-
-        # total score - value
-
-        self.total_score_image = self.font.render(
+        self.images["tot_v"] = self.font.render(
             f"{round(self.stats.score, -1):,}", True, self.settings.text_color
         )
-        self.total_score_rect = self.total_score_image.get_rect()
 
-        self.total_score_rect.right = self.screen_rect.right - 20
-        self.total_score_rect.top = self.bonuses_used_rect.bottom + 50
-
-        # level reached - txt
-        self.level_reached_txt_image = self.font.render(
+        # level reached
+        self.images["level_t"] = self.font.render(
             "Level reached", True, self.settings.text_color
         )
-        self.level_reached_txt_rect = self.level_reached_txt_image.get_rect()
-
-        self.level_reached_txt_rect.left = self.screen_rect.left + 20
-        self.level_reached_txt_rect.top = self.total_score_rect.bottom + 20
-
-        # level reached - value
-
-        self.level_reached_image = self.font.render(
+        self.images["level_v"] = self.font.render(
             str(self.stats.level), True, self.settings.text_color
         )
-        self.level_reached_rect = self.level_reached_image.get_rect()
+        for key in self.end_screen:
+            self.prepare_rects(key)
 
-        self.level_reached_rect.right = self.screen_rect.right - 20
-        self.level_reached_rect.top = self.total_score_rect.bottom + 20
+    def prep_score(self):
+        """Transform score into the on-screen image"""
+        rounded_score = round(self.stats.score, -1)
+        score_str = f"{rounded_score:,}"
+
+        self.images["score"] = self.font.render(score_str, True, self.settings.text_color)
+        self.prepare_rects("score")
+
+    def prep_high_score(self):
+        """Transform high-score into the on-screen image"""
+        rounded_high_score = round(self.stats.high_score, -1)
+        high_score_str = f"{rounded_high_score:,}"
+
+        self.images["high_score"] = self.font.render(
+            high_score_str, True, self.settings.text_color
+        )
+        self.prepare_rects("high_score")
+
+    def prep_level(self):
+        """Transform level info into the on-screen image"""
+        self.images["level"] = self.font.render(
+            str(self.stats.level), True, self.settings.text_color
+        )
+
+        self.prepare_rects("level")
+
+    def prep_boss_health(self):
+        """Transform boss health amount into the on-screen image"""
+
+        if (
+                self.settings.alien_boss_life
+                > self.settings.starting_alien_boss_life // 3 * 2
+        ):
+            color = self.text_full_health
+        elif (
+                self.settings.alien_boss_life > self.settings.starting_alien_boss_life // 3
+        ):
+            color = self.text_medium_health
+        else:
+            color = self.text_low_health
+
+        self.images["boss_health"] = self.font.render(
+            "BOSS: " + str(self.settings.alien_boss_life), True, color
+        )
+        self.prepare_rects("boss_health")
+
+    def prep_ships(self):
+        """Prepare images representing remaining ships"""
+        self.ships = Group()
+
+        for ship_number in range(self.stats.ships_left):
+            ship = Ship(self.game)
+            ship.rect.x = 10 + ship_number * ship.rect.width
+            ship.rect.y = 10
+            self.ships.add(ship)

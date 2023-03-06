@@ -14,24 +14,37 @@ class Settings:
 
         # ship settings
         self.ship_limit = 3
+        self.ship_speed_factor = None
 
         # bullet settings
-        self.bullet_width = 3  # CHANGED
+        self.bullet_width = 3
+        self.alien_bullet_width = 3
         self.bullet_height = 15
         self.bullet_color = (255, 255, 0)
-        self.bullets_allowed = 3  # CHANGED
+        self.bullets_allowed = 3
 
-        # boss beam colors
         self.beam_color_1 = (127, 255, 127)
         self.beam_color_2 = (15, 255, 80)
 
+        self.bullet_speed_factor = None
+        self.alien_bullet_speed_factor = None
+
         # alien settings
         self.fleet_drop_speed = 10
-        self.alien_boss_area = 30
-        self.alien_bullet_width = 3
+        self.alien_shooting_range = 999
+
+        self.alien_boss_single_move_range = 30
         self.alien_boss_points = 2000000
         self.starting_alien_boss_life = 50
-        self.alien_shooting_range = 999
+
+        self.current_alien = None
+        self.fleet_direction = None
+
+        self.alien_vertical_speed_factor = None
+        self.alien_horizontal_speed_factor = None
+
+        self.alien_points = None
+        self.alien_boss_life = None
 
         # level settings
         self.alien_changes = (6, 11, 16, 21)
@@ -43,21 +56,19 @@ class Settings:
             "AlienBoss",
         )
 
-        # game speed change
+        # game settings
         self.speedup_scale = 1.1
-
-        # game score change
         self.score_scale = 1.5
 
         # bonus settings
         self.bonus_drop_speed = 3
         self.bonus_active_time = 600
+        self.bonus_drop_rate = None
 
         self.initialize_dynamic_settings()
 
     def initialize_dynamic_settings(self):
-        """Creation of game dynamic data"""
-
+        """Add values to the game dynamic data"""
         # ship settings
         self.ship_speed_factor = 2
 
@@ -71,7 +82,7 @@ class Settings:
         self.fleet_direction = 1
         self.alien_points = 50
         self.alien_boss_life = self.starting_alien_boss_life
-        self.current_alien = 0  # CHANGED
+        self.current_alien = 0
 
         # bonus settings
         self.bonus_drop_rate = 1
@@ -82,5 +93,5 @@ class Settings:
         self.bullet_speed_factor *= self.speedup_scale
         self.alien_bullet_speed_factor *= self.speedup_scale
         self.alien_horizontal_speed_factor *= self.speedup_scale
-        self.alien_points = int(self.alien_points * self.score_scale)
+        self.alien_points *= self.score_scale
         self.bonus_drop_rate /= self.speedup_scale

@@ -36,7 +36,7 @@ class Ship(Animation, Sprite):
                 self.centerx + self.game.settings.ship_speed_factor,
                 self.game.settings.screen_width - self.rect.width // 2,
             )
-            self.game.background_rect.centerx -= (
+            self.game.image_rect.centerx -= (
                 self.game.settings.ship_speed_factor // 2
             )
         elif self.moving_left:
@@ -45,7 +45,7 @@ class Ship(Animation, Sprite):
                 self.rect.width // 2,
                 self.centerx - self.game.settings.ship_speed_factor,
             )
-            self.game.background_rect.centerx += (
+            self.game.image_rect.centerx += (
                 self.game.settings.ship_speed_factor // 2
             )
 
