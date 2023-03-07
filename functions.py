@@ -384,7 +384,7 @@ def check_alien_bullets_ship_collision(game):
 
 def drop_bonus(game, pos_x, pos_y):
     """Select and create bonus object which will be dropped by killed alien"""
-    choosen_bonus = randint(2, 2)
+    choosen_bonus = randint(0, 5)
 
     if choosen_bonus == 0:  # extra ship
         bonus = Bonus00(game, pos_x, pos_y, "bonus_add")

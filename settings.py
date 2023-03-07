@@ -59,11 +59,15 @@ class Settings:
         # game settings
         self.speedup_scale = 1.1
         self.score_scale = 1.5
+        self.bonus_probability_scale = 1.01
 
         # bonus settings
         self.bonus_drop_speed = 3
         self.bonus_active_time = 600
         self.bonus_drop_rate = None
+        self.aliens_frozen = None
+        self.aliens_slowed_down = None
+        self.more_bullets = None
 
         self.initialize_dynamic_settings()
 
@@ -85,7 +89,7 @@ class Settings:
         self.current_alien = 0
 
         # bonus settings
-        self.bonus_drop_rate = 1
+        self.bonus_drop_rate = 9999
 
     def increase_speed(self):
         """Change speed factors due to higher level"""
@@ -94,4 +98,4 @@ class Settings:
         self.alien_bullet_speed_factor *= self.speedup_scale
         self.alien_horizontal_speed_factor *= self.speedup_scale
         self.alien_points *= self.score_scale
-        self.bonus_drop_rate /= self.speedup_scale
+        self.bonus_drop_rate /= self.bonus_probability_scale

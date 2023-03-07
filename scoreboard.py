@@ -207,16 +207,14 @@ class Scoreboard:
 
     def prep_score(self):
         """Transform score into the on-screen image"""
-        rounded_score = round(self.stats.score, -1)
-        score_str = f"{rounded_score:,}"
+        score_str = f"{int(self.stats.score):,}"
 
         self.images["score"] = self.font.render(score_str, True, self.settings.text_color)
         self.prepare_rects("score")
 
     def prep_high_score(self):
         """Transform high-score into the on-screen image"""
-        rounded_high_score = round(self.stats.high_score, -1)
-        high_score_str = f"{rounded_high_score:,}"
+        high_score_str = f"{int(self.stats.high_score):,}"
 
         self.images["high_score"] = self.font.render(
             high_score_str, True, self.settings.text_color

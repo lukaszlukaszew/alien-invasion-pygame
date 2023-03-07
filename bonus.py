@@ -59,13 +59,15 @@ class Bonus01(Bonus):
 
     def apply_effect(self):
         """Change the game parameters - bullets allowed"""
-        if self.bullets_allowed != self.game.settings.bullets_allowed:
+        if self.game.settings.more_bullets is None:
+            self.game.settings.more_bullets = id(self)
             self.bullets_allowed = self.game.settings.bullets_allowed
             self.game.settings.bullets_allowed = 1000
 
     def reverse_effect(self):
         """Reverse the change of the game parameters - bullets allowed"""
-        if self.bullets_allowed:
+        if self.game.settings.more_bullets == id(self):
+            self.game.settings.more_bullets = None
             self.game.settings.bullets_allowed = self.bullets_allowed
 
 
@@ -107,24 +109,45 @@ class Bonus04(Bonus):
     def __init__(self, game, x, y, bonus_type):
         """Extend basic bonus parameters"""
         super().__init__(game, x, y, bonus_type)
-        self.alien_speed = 0
+        self.alien_horizontal_speed = 0
+        self.alien_vertical_speed = 0
         self.level = 0
         self.shooting_range = 0
 
     def apply_effect(self):
         """Change the game parameters - stop all alien movement and shooting"""
-        if self.game.settings.alien_horizontal_speed_factor:
-            self.alien_speed = self.game.settings.alien_horizontal_speed_factor
+        if (
+            self.game.settings.aliens_frozen is None
+            and self.game.settings.aliens_slowed_down is None
+        ):
+            self.game.settings.aliens_frozen = id(self)
+            self.game.settings.aliens_slowed_down = id(self)
+
+            self.alien_horizontal_speed = (
+                self.game.settings.alien_horizontal_speed_factor
+            )
+            self.alien_vertical_speed = self.game.settings.alien_vertical_speed_factor
             self.level = self.game.stats.level
             self.game.settings.alien_horizontal_speed_factor = 0
+            self.game.settings.alien_vertical_speed_factor = 0
 
             self.shooting_range = self.game.settings.alien_shooting_range
             self.game.settings.alien_shooting_range = 1000
 
     def reverse_effect(self):
         """Reverse the change of the game parameters - stop all alien movement and shooting"""
-        if self.level + self.alien_speed + self.shooting_range:
-            self.game.settings.alien_horizontal_speed_factor = self.alien_speed
+        if (
+            self.game.settings.aliens_frozen
+            == id(self)
+            == self.game.settings.aliens_slowed_down
+        ):
+            self.game.settings.aliens_frozen = None
+            self.game.settings.aliens_slowed_down = None
+
+            self.game.settings.alien_horizontal_speed_factor = (
+                self.alien_horizontal_speed
+            )
+            self.game.settings.alien_vertical_speed_factor = self.alien_vertical_speed
             for _ in range(self.game.stats.level - self.level):
                 self.game.settings.alien_horizontal_speed_factor *= (
                     self.game.settings.speedup_scale
@@ -147,10 +170,11 @@ class Bonus05(Bonus):
     def apply_effect(self):
         """Change the game parameters - divide alien speed and alien bullet speed parameters by 2"""
         if (
-            self.game.settings.alien_horizontal_speed_factor
-            + self.game.settings.alien_vertical_speed_factor
-            + self.game.settings.alien_bullet_speed_factor
+            self.game.settings.aliens_frozen is None
+            and self.game.settings.aliens_slowed_down is None
         ):
+            self.game.settings.aliens_frozen = id(self)
+            self.game.settings.aliens_slowed_down = id(self)
 
             self.level = self.game.stats.level
 
@@ -168,11 +192,13 @@ class Bonus05(Bonus):
     def reverse_effect(self):
         """Reverse the change of the game parameters - divide alien speed and alien bullet spe..."""
         if (
-            self.alien_horizontal_speed
-            + self.alien_vertical_speed
-            + self.level
-            + self.alien_bullet_speed
+            self.game.settings.aliens_frozen
+            == id(self)
+            == self.game.settings.aliens_slowed_down
         ):
+            self.game.settings.aliens_frozen = None
+            self.game.settings.aliens_slowed_down = None
+
             self.game.settings.alien_horizontal_speed_factor = (
                 self.alien_horizontal_speed
             )
