@@ -32,12 +32,12 @@ class SoundMixer:
         self.channels = {}
 
         for sound, volume in self.sound_list.items():
-            self.sounds[sound] = mixer.Sound(f"sounds/{sound}.wav")
+            self.sounds[sound] = mixer.Sound(f"sounds/{sound}.ogg")
             self.sounds[sound].set_volume(volume)
 
         for num, music in enumerate(self.music_list.keys()):
             self.channels[music] = mixer.Channel(num)
-            self.music[music] = mixer.Sound(f"sounds/{music}.wav")
+            self.music[music] = mixer.Sound(f"sounds/{music}.ogg")
             self.music[music].set_volume(self.music_list[music])
 
         mixer.set_num_channels(150)
